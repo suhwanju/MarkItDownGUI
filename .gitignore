@@ -27,5 +27,4 @@ dist-ssr
 .claude
 build
 build_system
-
-dist
+*.spec
