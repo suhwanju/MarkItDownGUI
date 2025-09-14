@@ -1,0 +1,306 @@
+{
+  "app": {
+    "name": "MarkItDown GUI Converter",
+    "version": "v1.0.0",
+    "description": "Convert various document formats to Markdown using Microsoft MarkItDown library"
+  },
+  "window": {
+    "title": "MarkItDown GUI Converter",
+    "ready": "Ready",
+    "scanning": "Scanning directory...",
+    "converting": "Converting files...",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "error": "Error"
+  },
+  "menu": {
+    "file": {
+      "title": "File(&F)",
+      "select_directory": "Select Directory(&D)",
+      "exit": "Exit(&X)"
+    },
+    "edit": {
+      "title": "Edit(&E)",
+      "select_all": "Select All(&A)",
+      "select_none": "Deselect All(&N)"
+    },
+    "view": {
+      "title": "View(&V)",
+      "show_log": "Show Log(&L)",
+      "view_selected_file": "View Selected File(&F)"
+    },
+    "tools": {
+      "title": "Tools(&T)",
+      "settings": "Settings(&S)"
+    },
+    "help": {
+      "title": "Help(&H)",
+      "about": "About(&A)"
+    }
+  },
+  "directory": {
+    "group_title": "Directory Selection",
+    "label_placeholder": "Please select a directory...",
+    "browse_button": "Browse...",
+    "include_subdirs": "Include subdirectories",
+    "recent_label": "Recent:",
+    "browse_dialog_title": "Select directory containing files to convert"
+  },
+  "files": {
+    "count_label": "Files: {0}",
+    "selected_count_label": "Selected: {0}",
+    "scan_button": "Scan Files",
+    "scan_button_scanning": "Scanning...",
+    "convert_button": "Convert Selected Files",
+    "convert_button_converting": "Converting...",
+    "preview_button": "Preview",
+    "download_button": "Download All Markdown",
+    "open_output_button": "Open Output Folder"
+  },
+  "progress": {
+    "title": "Progress",
+    "current_file": "Current file: {0}",
+    "progress_text": "{0}/{1} files",
+    "cancel_button": "Cancel",
+    "time_remaining": "Time remaining: {0}",
+    "speed": "Speed: {0} files/min"
+  },
+  "log": {
+    "title": "Log",
+    "clear_button": "Clear",
+    "export_button": "Export",
+    "level_debug": "Debug",
+    "level_info": "Info", 
+    "level_warning": "Warning",
+    "level_error": "Error"
+  },
+  "messages": {
+    "info": {
+      "directory_selected": "Directory selected: {0}",
+      "scan_completed": "Scan completed: {0} files found",
+      "no_files_found": "No supported files found.\n\nSupported formats: docx, pptx, xlsx, pdf, jpg, png, txt, html, etc.",
+      "conversion_completed": "All files converted successfully.\n\nConverted files: {0}",
+      "conversion_partial": "Conversion completed.\n\nSuccess: {0}\nFailed: {1}\n\nCheck logs for details.",
+      "already_scanning": "Scan is already in progress.",
+      "already_converting": "Conversion is already in progress.",
+      "no_files_selected": "Please select files to convert.",
+      "no_files_to_preview": "Please select a file to preview.",
+      "multiple_files_preview": "Preview is only available for one file at a time.",
+      "no_files_to_download": "No files to download.\nPlease convert files first.",
+      "no_markdown_files": "No markdown files to download.",
+      "select_file_first": "Please select a file first.",
+      "select_single_file": "Please select only one file.",
+      "export_completed": "File exported successfully to:\n{0}",
+      "download_completed": "Markdown files downloaded successfully.\n\nFile: {0}\nIncluded files: {1}"
+    },
+    "warning": {
+      "select_directory_first": "Please select a directory first.",
+      "conversion_failed": "The following files cannot be converted:\n\n{0}",
+      "folder_open_failed": "Cannot open folder: {0}",
+      "export_failed": "Export failed",
+      "download_failed": "Download failed",
+      "settings_apply_failed": "Settings apply failed: {0}"
+    },
+    "error": {
+      "markitdown_not_installed": "MarkItDown library is not installed.\n\nPlease install with:\npip install markitdown[all]",
+      "scan_error": "Error occurred during scan:\n{0}",
+      "scan_failed": "Cannot start scan.",
+      "conversion_error": "Error occurred during conversion:\n{0}",
+      "conversion_failed": "Cannot start conversion.",
+      "preview_error": "Error occurred during preview:\n{0}",
+      "export_error": "Error occurred during export:\n{0}",
+      "download_error": "Error occurred during download:\n{0}",
+      "file_open_error": "Cannot open file:\n{0}"
+    },
+    "confirm": {
+      "exit_during_operation": "Operation is in progress. Are you sure you want to exit?",
+      "cancel_conversion": "Do you want to cancel the conversion?",
+      "reset_settings": "Reset all settings to default values?",
+      "delete_api_key": "Delete saved API key?",
+      "preview_convert": "'{0}' has not been converted yet.\nDo you want to convert for preview?"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "ok_button": "OK",
+    "cancel_button": "Cancel", 
+    "apply_button": "Apply",
+    "reset_button": "Reset to Defaults",
+    "general_tab": "General",
+    "conversion_tab": "Conversion",
+    "llm_tab": "LLM",
+    "general": {
+      "language_group": "Language Settings",
+      "language_label": "Language:",
+      "directory_group": "Directory Settings", 
+      "output_directory_label": "Output Directory:",
+      "log_directory_label": "Log Directory:",
+      "browse_button": "Browse...",
+      "ui_group": "User Interface",
+      "theme_label": "Theme:",
+      "font_size_label": "Font Size:",
+      "auto_save_label": "Enable auto save",
+      "startup_group": "Startup Settings",
+      "remember_window_label": "Remember window size and position",
+      "restore_session_label": "Restore last session", 
+      "check_updates_label": "Check for updates on startup",
+      "theme_system": "System Default",
+      "theme_light": "Light Mode",
+      "theme_dark": "Dark Mode"
+    },
+    "conversion": {
+      "options_group": "Conversion Options",
+      "include_metadata_label": "Include metadata",
+      "preserve_formatting_label": "Preserve formatting",
+      "extract_images_label": "Extract images",
+      "include_toc_label": "Generate table of contents",
+      "processing_group": "File Processing",
+      "max_workers_label": "Maximum workers:",
+      "timeout_label": "Conversion timeout:",
+      "retry_count_label": "Retry count:",
+      "quality_group": "Quality Settings",
+      "ocr_quality_label": "OCR Quality:",
+      "image_quality_label": "Image Quality:",
+      "output_group": "Output Format",
+      "encoding_label": "Encoding:",
+      "line_ending_label": "Line endings:",
+      "ocr_quality_low": "Low",
+      "ocr_quality_medium": "Medium", 
+      "ocr_quality_high": "High",
+      "ocr_quality_best": "Best",
+      "line_ending_system": "System Default",
+      "line_ending_lf": "LF (\\n)",
+      "line_ending_crlf": "CRLF (\\r\\n)"
+    },
+    "llm": {
+      "api_group": "API Settings",
+      "provider_label": "Provider:",
+      "api_key_label": "API Key:",
+      "save_key_button": "Save Key",
+      "delete_key_button": "Delete Key", 
+      "base_url_label": "Base URL:",
+      "api_version_label": "API Version:",
+      "model_label": "Model:",
+      "key_status_saved": "Key Saved",
+      "key_status_none": "No Key",
+      "ocr_group": "OCR Settings",
+      "enable_llm_ocr_label": "Enable LLM-based OCR",
+      "ocr_language_label": "OCR Language:",
+      "max_image_size_label": "Max Image Size:",
+      "advanced_group": "Advanced Settings",
+      "temperature_label": "Temperature:",
+      "max_tokens_label": "Max Tokens:",
+      "system_prompt_label": "System Prompt:",
+      "usage_group": "Token Usage Tracking",
+      "track_usage_label": "Track token usage",
+      "monthly_limit_label": "Monthly limit:",
+      "current_usage_label": "Current usage:",
+      "test_connection_button": "Test Connection",
+      "test_connection_testing": "Testing...",
+      "view_usage_button": "View Statistics",
+      "providers": {
+        "openai": "OpenAI",
+        "azure_openai": "Azure OpenAI",
+        "anthropic": "Anthropic Claude",
+        "google": "Google Gemini", 
+        "local": "Local LLM"
+      },
+      "ocr_languages": {
+        "auto": "Auto Detect",
+        "ko": "Korean",
+        "en": "English",
+        "zh": "Chinese",
+        "ja": "Japanese",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German"
+      },
+      "connection_test": {
+        "success_title": "Connection Successful",
+        "success_message": "Connection successful!\n\nModel: {0}\nResponse time: {1:.2f}s\nTokens used: {2}",
+        "failure_title": "Connection Failed",
+        "failure_message": "Connection failed:\n\n{0}",
+        "timeout_error": "Connection timed out. Please check your network connection.",
+        "connection_error": "Connection error: {0}",
+        "config_error": "Configuration error: {0}",
+        "unexpected_error": "Unexpected error: {0}"
+      },
+      "usage_stats": {
+        "title": "Token Usage Statistics (Last 30 days)",
+        "total_requests": "Total requests: {0}",
+        "successful_requests": "Successful requests: {0}",
+        "total_tokens": "Total tokens used: {0:,}",
+        "estimated_cost": "Estimated cost: ${0:.4f}",
+        "success_rate": "Success rate: {0:.1f}%",
+        "avg_tokens": "Average tokens/request: {0:.1f}",
+        "current_month": "This month usage: {0:,} tokens"
+      }
+    },
+    "success": {
+      "settings_saved": "Settings saved successfully",
+      "settings_reset": "Settings reset to defaults",
+      "api_key_saved": "API key saved successfully"
+    },
+    "error": {
+      "invalid_input": "Please enter valid information",
+      "save_failed": "Failed to save settings",
+      "reset_failed": "Failed to reset settings",
+      "api_key_save_failed": "Failed to save API key",
+      "api_key_delete_failed": "Failed to delete API key"
+    }
+  },
+  "dialogs": {
+    "preview": {
+      "title": "Markdown Preview - {0}",
+      "close_button": "Close",
+      "export_button": "Export",
+      "raw_tab": "Raw Markdown",
+      "rendered_tab": "Rendered Preview"
+    },
+    "file_viewer": {
+      "title": "File Viewer - {0}",
+      "close_button": "Close",
+      "export_button": "Export as Markdown"
+    },
+    "about": {
+      "title": "About",
+      "text": "MarkItDown GUI Converter v{0}\n\nA tool to convert various documents to Markdown\nusing Microsoft MarkItDown library."
+    }
+  },
+  "status": {
+    "files_scanned": "Files scanned: {0}",
+    "files_converted": "Files converted: {0}/{1}",
+    "current_file": "Converting: {0}",
+    "scan_progress": "Scanning... ({0}/{1})",
+    "settings_applied": "Settings applied",
+    "export_completed": "Export completed: {0}",
+    "export_failed": "Export failed",
+    "downloading": "Downloading files...",
+    "download_completed": "Download completed"
+  },
+  "file_types": {
+    "document": "Document",
+    "spreadsheet": "Spreadsheet", 
+    "presentation": "Presentation",
+    "pdf": "PDF",
+    "image": "Image",
+    "text": "Text",
+    "web": "Web Page",
+    "archive": "Archive",
+    "other": "Other"
+  },
+  "units": {
+    "bytes": "bytes",
+    "kb": "KB", 
+    "mb": "MB",
+    "gb": "GB",
+    "seconds": "seconds",
+    "minutes": "minutes",
+    "hours": "hours",
+    "files_per_minute": "files/min"
+  },
+  "languages": {
+    "en_US": "English",
+    "ko_KR": "한국어"
+  }
+}

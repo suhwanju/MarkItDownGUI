@@ -1,0 +1,306 @@
+{
+  "app": {
+    "name": "MarkItDown GUI 변환기",
+    "version": "v1.0.0",
+    "description": "Microsoft MarkItDown 라이브러리를 사용하여 다양한 문서 형식을 마크다운으로 변환하는 도구"
+  },
+  "window": {
+    "title": "MarkItDown GUI 변환기",
+    "ready": "준비",
+    "scanning": "디렉토리 스캔 중...",
+    "converting": "파일 변환 중...",
+    "completed": "완료",
+    "cancelled": "취소됨",
+    "error": "오류"
+  },
+  "menu": {
+    "file": {
+      "title": "파일(&F)",
+      "select_directory": "디렉토리 선택(&D)",
+      "exit": "종료(&X)"
+    },
+    "edit": {
+      "title": "편집(&E)",
+      "select_all": "전체 선택(&A)",
+      "select_none": "전체 해제(&N)"
+    },
+    "view": {
+      "title": "보기(&V)",
+      "show_log": "로그 표시(&L)",
+      "view_selected_file": "선택된 파일 보기(&F)"
+    },
+    "tools": {
+      "title": "도구(&T)",
+      "settings": "설정(&S)"
+    },
+    "help": {
+      "title": "도움말(&H)",
+      "about": "정보(&A)"
+    }
+  },
+  "directory": {
+    "group_title": "디렉토리 선택",
+    "label_placeholder": "디렉토리를 선택해주세요...",
+    "browse_button": "찾아보기...",
+    "include_subdirs": "하위 디렉토리 포함",
+    "recent_label": "최근 사용:",
+    "browse_dialog_title": "변환할 파일들이 있는 디렉토리를 선택하세요"
+  },
+  "files": {
+    "count_label": "파일: {0}개",
+    "selected_count_label": "선택: {0}개",
+    "scan_button": "파일 스캔",
+    "scan_button_scanning": "스캔 중...",
+    "convert_button": "선택된 파일 변환",
+    "convert_button_converting": "변환 중...",
+    "preview_button": "미리보기",
+    "download_button": "모든 마크다운 다운로드",
+    "open_output_button": "출력 폴더 열기"
+  },
+  "progress": {
+    "title": "진행률",
+    "current_file": "현재 파일: {0}",
+    "progress_text": "{0}/{1} 파일",
+    "cancel_button": "취소",
+    "time_remaining": "남은 시간: {0}",
+    "speed": "속도: {0} 파일/분"
+  },
+  "log": {
+    "title": "로그",
+    "clear_button": "지우기",
+    "export_button": "내보내기",
+    "level_debug": "디버그",
+    "level_info": "정보", 
+    "level_warning": "경고",
+    "level_error": "오류"
+  },
+  "messages": {
+    "info": {
+      "directory_selected": "디렉토리 선택됨: {0}",
+      "scan_completed": "스캔 완료: {0}개 파일 발견",
+      "no_files_found": "지원하는 파일을 찾을 수 없습니다.\n\n지원 형식: docx, pptx, xlsx, pdf, jpg, png, txt, html 등",
+      "conversion_completed": "모든 파일이 성공적으로 변환되었습니다.\n\n변환된 파일: {0}개",
+      "conversion_partial": "변환이 완료되었습니다.\n\n성공: {0}개\n실패: {1}개\n\n자세한 내용은 로그를 확인해주세요.",
+      "already_scanning": "이미 스캔이 진행 중입니다.",
+      "already_converting": "이미 변환이 진행 중입니다.",
+      "no_files_selected": "변환할 파일을 선택해주세요.",
+      "no_files_to_preview": "미리보기할 파일을 선택해주세요.",
+      "multiple_files_preview": "미리보기는 한 번에 하나의 파일만 가능합니다.",
+      "no_files_to_download": "다운로드할 파일이 없습니다.\n먼저 파일을 변환해주세요.",
+      "no_markdown_files": "다운로드할 마크다운 파일이 없습니다.",
+      "select_file_first": "파일을 먼저 선택해주세요.",
+      "select_single_file": "하나의 파일만 선택해주세요.",
+      "export_completed": "파일이 성공적으로 내보내기되었습니다:\n{0}",
+      "download_completed": "마크다운 파일들이 성공적으로 다운로드되었습니다.\n\n파일: {0}\n포함된 파일 수: {1}개"
+    },
+    "warning": {
+      "select_directory_first": "디렉토리를 먼저 선택해주세요.",
+      "conversion_failed": "다음 파일들은 변환할 수 없습니다:\n\n{0}",
+      "folder_open_failed": "폴더를 열 수 없습니다: {0}",
+      "export_failed": "내보내기 실패",
+      "download_failed": "다운로드 실패",
+      "settings_apply_failed": "설정 적용 실패: {0}"
+    },
+    "error": {
+      "markitdown_not_installed": "MarkItDown 라이브러리가 설치되지 않았습니다.\n\n다음 명령어로 설치해주세요:\npip install markitdown[all]",
+      "scan_error": "스캔 중 오류가 발생했습니다:\n{0}",
+      "scan_failed": "스캔을 시작할 수 없습니다.",
+      "conversion_error": "변환 중 오류가 발생했습니다:\n{0}",
+      "conversion_failed": "변환을 시작할 수 없습니다.",
+      "preview_error": "미리보기 중 오류가 발생했습니다:\n{0}",
+      "export_error": "파일 내보내기 중 오류가 발생했습니다:\n{0}",
+      "download_error": "다운로드 중 오류가 발생했습니다:\n{0}",
+      "file_open_error": "파일을 열 수 없습니다:\n{0}"
+    },
+    "confirm": {
+      "exit_during_operation": "작업이 진행 중입니다. 정말 종료하시겠습니까?",
+      "cancel_conversion": "변환을 취소하시겠습니까?",
+      "reset_settings": "모든 설정을 기본값으로 초기화하시겠습니까?",
+      "delete_api_key": "저장된 API 키를 삭제하시겠습니까?",
+      "preview_convert": "'{0}' 파일이 아직 변환되지 않았습니다.\n미리보기를 위해 변환하시겠습니까?"
+    }
+  },
+  "settings": {
+    "title": "설정",
+    "ok_button": "확인",
+    "cancel_button": "취소", 
+    "apply_button": "적용",
+    "reset_button": "기본값 복원",
+    "general_tab": "일반",
+    "conversion_tab": "변환",
+    "llm_tab": "LLM",
+    "general": {
+      "language_group": "언어 설정",
+      "language_label": "언어:",
+      "directory_group": "디렉토리 설정", 
+      "output_directory_label": "출력 디렉토리:",
+      "log_directory_label": "로그 디렉토리:",
+      "browse_button": "찾아보기...",
+      "ui_group": "사용자 인터페이스",
+      "theme_label": "테마:",
+      "font_size_label": "폰트 크기:",
+      "auto_save_label": "자동 저장 활성화",
+      "startup_group": "시작 설정",
+      "remember_window_label": "창 크기와 위치 기억",
+      "restore_session_label": "마지막 세션 복원", 
+      "check_updates_label": "시작시 업데이트 확인",
+      "theme_system": "시스템 기본",
+      "theme_light": "라이트 모드",
+      "theme_dark": "다크 모드"
+    },
+    "conversion": {
+      "options_group": "변환 옵션",
+      "include_metadata_label": "메타데이터 포함",
+      "preserve_formatting_label": "포맷팅 유지",
+      "extract_images_label": "이미지 추출",
+      "include_toc_label": "목차 생성",
+      "processing_group": "파일 처리",
+      "max_workers_label": "최대 작업자 수:",
+      "timeout_label": "변환 타임아웃:",
+      "retry_count_label": "재시도 횟수:",
+      "quality_group": "품질 설정",
+      "ocr_quality_label": "OCR 품질:",
+      "image_quality_label": "이미지 품질:",
+      "output_group": "출력 형식",
+      "encoding_label": "인코딩:",
+      "line_ending_label": "줄 끝 문자:",
+      "ocr_quality_low": "낮음",
+      "ocr_quality_medium": "보통", 
+      "ocr_quality_high": "높음",
+      "ocr_quality_best": "최고",
+      "line_ending_system": "시스템 기본",
+      "line_ending_lf": "LF (\\n)",
+      "line_ending_crlf": "CRLF (\\r\\n)"
+    },
+    "llm": {
+      "api_group": "API 설정",
+      "provider_label": "공급업체:",
+      "api_key_label": "API 키:",
+      "save_key_button": "키 저장",
+      "delete_key_button": "키 삭제", 
+      "base_url_label": "기본 URL:",
+      "api_version_label": "API 버전:",
+      "model_label": "모델:",
+      "key_status_saved": "키 저장됨",
+      "key_status_none": "키 없음",
+      "ocr_group": "OCR 설정",
+      "enable_llm_ocr_label": "LLM 기반 OCR 활성화",
+      "ocr_language_label": "OCR 언어:",
+      "max_image_size_label": "최대 이미지 크기:",
+      "advanced_group": "고급 설정",
+      "temperature_label": "Temperature:",
+      "max_tokens_label": "최대 토큰:",
+      "system_prompt_label": "시스템 프롬프트:",
+      "usage_group": "토큰 사용량 추적",
+      "track_usage_label": "토큰 사용량 추적",
+      "monthly_limit_label": "월별 한도:",
+      "current_usage_label": "현재 사용량:",
+      "test_connection_button": "연결 테스트",
+      "test_connection_testing": "테스트 중...",
+      "view_usage_button": "사용량 통계",
+      "providers": {
+        "openai": "OpenAI",
+        "azure_openai": "Azure OpenAI",
+        "anthropic": "Anthropic Claude",
+        "google": "Google Gemini", 
+        "local": "로컬 LLM"
+      },
+      "ocr_languages": {
+        "auto": "자동 감지",
+        "ko": "한국어",
+        "en": "English",
+        "zh": "中文",
+        "ja": "日本語",
+        "es": "Español",
+        "fr": "Français",
+        "de": "Deutsch"
+      },
+      "connection_test": {
+        "success_title": "연결 성공",
+        "success_message": "연결이 성공했습니다!\n\n모델: {0}\n응답 시간: {1:.2f}초\n사용 토큰: {2}",
+        "failure_title": "연결 실패",
+        "failure_message": "연결에 실패했습니다:\n\n{0}",
+        "timeout_error": "연결 시간이 초과되었습니다. 네트워크 연결을 확인해주세요.",
+        "connection_error": "연결 오류: {0}",
+        "config_error": "설정 오류: {0}",
+        "unexpected_error": "예상치 못한 오류: {0}"
+      },
+      "usage_stats": {
+        "title": "토큰 사용량 통계 (최근 30일)",
+        "total_requests": "총 요청 수: {0}",
+        "successful_requests": "성공 요청: {0}",
+        "total_tokens": "총 토큰 사용: {0:,}",
+        "estimated_cost": "예상 비용: ${0:.4f}",
+        "success_rate": "성공률: {0:.1f}%",
+        "avg_tokens": "평균 토큰/요청: {0:.1f}",
+        "current_month": "이번 달 사용량: {0:,} 토큰"
+      }
+    },
+    "success": {
+      "settings_saved": "설정이 성공적으로 저장되었습니다",
+      "settings_reset": "설정이 기본값으로 초기화되었습니다",
+      "api_key_saved": "API 키가 성공적으로 저장되었습니다"
+    },
+    "error": {
+      "invalid_input": "올바른 정보를 입력해주세요",
+      "save_failed": "설정 저장에 실패했습니다",
+      "reset_failed": "설정 초기화에 실패했습니다",
+      "api_key_save_failed": "API 키 저장에 실패했습니다",
+      "api_key_delete_failed": "API 키 삭제에 실패했습니다"
+    }
+  },
+  "dialogs": {
+    "preview": {
+      "title": "마크다운 미리보기 - {0}",
+      "close_button": "닫기",
+      "export_button": "내보내기",
+      "raw_tab": "원본 마크다운",
+      "rendered_tab": "렌더링된 미리보기"
+    },
+    "file_viewer": {
+      "title": "파일 뷰어 - {0}",
+      "close_button": "닫기",
+      "export_button": "마크다운으로 내보내기"
+    },
+    "about": {
+      "title": "정보",
+      "text": "MarkItDown GUI 변환기 v{0}\n\nMicrosoft MarkItDown 라이브러리를 사용하여\n다양한 문서를 Markdown으로 변환하는 도구입니다."
+    }
+  },
+  "status": {
+    "files_scanned": "스캔된 파일: {0}개",
+    "files_converted": "변환된 파일: {0}/{1}",
+    "current_file": "변환 중: {0}",
+    "scan_progress": "스캔 중... ({0}/{1})",
+    "settings_applied": "설정이 적용되었습니다",
+    "export_completed": "내보내기 완료: {0}",
+    "export_failed": "내보내기 실패",
+    "downloading": "파일 다운로드 중...",
+    "download_completed": "다운로드 완료"
+  },
+  "file_types": {
+    "document": "문서",
+    "spreadsheet": "스프레드시트", 
+    "presentation": "프레젠테이션",
+    "pdf": "PDF",
+    "image": "이미지",
+    "text": "텍스트",
+    "web": "웹 페이지",
+    "archive": "압축 파일",
+    "other": "기타"
+  },
+  "units": {
+    "bytes": "바이트",
+    "kb": "KB", 
+    "mb": "MB",
+    "gb": "GB",
+    "seconds": "초",
+    "minutes": "분",
+    "hours": "시간",
+    "files_per_minute": "파일/분"
+  },
+  "languages": {
+    "en_US": "English",
+    "ko_KR": "한국어"
+  }
+}
