@@ -1,0 +1,288 @@
+/* Custom styles for MarkItDown GUI documentation */
+
+/* Improve code block styling */
+.highlight {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    overflow-x: auto;
+}
+
+.highlight pre {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    font-family: 'SFMono-Regular', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+/* Improve table styling */
+.wy-table-responsive table td,
+.wy-table-responsive table th {
+    white-space: normal;
+    padding: 12px 8px;
+}
+
+.wy-table-responsive table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.wy-table-responsive table tbody tr:nth-child(odd) {
+    background-color: #f8f9fa;
+}
+
+/* Improve admonition styling */
+.admonition {
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin: 16px 0;
+    padding: 16px;
+}
+
+.admonition.note {
+    background-color: #e7f3ff;
+    border-left: 4px solid #0969da;
+}
+
+.admonition.warning {
+    background-color: #fff8e1;
+    border-left: 4px solid #ff8f00;
+}
+
+.admonition.tip {
+    background-color: #e8f5e8;
+    border-left: 4px solid #28a745;
+}
+
+.admonition.important {
+    background-color: #fff5f5;
+    border-left: 4px solid #dc3545;
+}
+
+/* Improve navigation styling */
+.wy-nav-side {
+    background: #2c3e50;
+}
+
+.wy-menu-vertical a {
+    color: #ecf0f1;
+    transition: all 0.2s ease;
+}
+
+.wy-menu-vertical a:hover {
+    background-color: #34495e;
+    color: #fff;
+}
+
+.wy-menu-vertical .current a {
+    background-color: #3498db;
+    color: #fff;
+    border-right: 3px solid #2980b9;
+}
+
+/* Improve content area */
+.wy-nav-content {
+    background: #fff;
+}
+
+.wy-nav-content-wrap {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Improve heading styling */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 600;
+    margin-top: 32px;
+    margin-bottom: 16px;
+    line-height: 1.25;
+}
+
+h1 {
+    color: #2c3e50;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 8px;
+}
+
+h2 {
+    color: #34495e;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 4px;
+}
+
+/* Improve link styling */
+a {
+    color: #3498db;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+/* Improve list styling */
+ul li, ol li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+/* API documentation specific styling */
+.py-class > dt {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px 6px 0 0;
+    padding: 12px 16px;
+    font-family: 'SFMono-Regular', monospace;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.py-method > dt {
+    background-color: #f1f8ff;
+    border: 1px solid #c9ecff;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-top: 16px;
+    font-family: 'SFMono-Regular', monospace;
+    font-size: 13px;
+}
+
+.py-attribute > dt {
+    background-color: #f6f8fa;
+    border: 1px solid #d1d9e0;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-top: 12px;
+    font-family: 'SFMono-Regular', monospace;
+    font-size: 12px;
+}
+
+/* Parameter and return value styling */
+.field-list {
+    margin: 16px 0;
+}
+
+.field-list .field-name {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Source code link styling */
+.viewcode-link {
+    float: right;
+    font-size: 12px;
+    color: #6c757d;
+    text-decoration: none;
+    padding: 4px 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.viewcode-link:hover {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+/* Search result styling */
+.search li {
+    padding: 12px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.search li:last-child {
+    border-bottom: none;
+}
+
+.search .context {
+    color: #6c757d;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+/* Footer styling */
+.wy-nav-content footer {
+    color: #6c757d;
+    font-size: 12px;
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid #e9ecef;
+    margin-top: 48px;
+}
+
+/* Korean font support */
+body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans CJK KR', sans-serif;
+}
+
+code, pre, .highlight {
+    font-family: 'D2Coding', 'SFMono-Regular', 'Monaco', 'Consolas', monospace;
+}
+
+/* Responsive design improvements */
+@media screen and (max-width: 768px) {
+    .wy-nav-side {
+        width: 280px;
+    }
+    
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+    
+    .wy-nav-content {
+        padding: 16px;
+    }
+    
+    .rst-content .section {
+        margin-bottom: 24px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .wy-nav-side,
+    .wy-nav-top,
+    .rst-footer-buttons,
+    .viewcode-link {
+        display: none !important;
+    }
+    
+    .wy-nav-content-wrap {
+        margin-left: 0 !important;
+    }
+    
+    .rst-content {
+        max-width: none !important;
+    }
+}
+
+/* Dark mode support (when available) */
+@media (prefers-color-scheme: dark) {
+    .highlight {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .wy-table-responsive table thead th {
+        background-color: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .wy-table-responsive table tbody tr:nth-child(odd) {
+        background-color: #2d3748;
+    }
+}
