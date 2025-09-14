@@ -44,3 +44,6 @@ logs/
 # Application specific
 config/user_config.json
 config/recent_directories.json
+
+# Development files that should not be in version control
+markitdown-main/
