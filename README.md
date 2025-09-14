@@ -395,5 +395,5 @@ pip install -r requirements.txt
 
 ---
 
-**MarkItDown GUI v1.2** - Production Ready Document Conversion Platform  
+**MarkItDown GUI v1.2** - Production Ready Document Conversion Platform
 *Enterprise-grade reliability with user-friendly interface*
