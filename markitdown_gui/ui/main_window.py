@@ -1150,7 +1150,7 @@ class MainWindow(QMainWindow):
         count = len(file_infos)
         self.status_bar.showMessage(f"스캔 완료: {count}개 파일 발견")
         self._reset_scan_ui()
-        
+
         if count == 0:
             QMessageBox.information(
                 self, "스캔 완료",
@@ -1158,9 +1158,8 @@ class MainWindow(QMainWindow):
                 "지원 형식: docx, pptx, xlsx, pdf, jpg, png, txt, html 등"
             )
         else:
-            # 일부 파일을 기본 선택
-            for file_info in file_infos[:5]:  # 처음 5개 파일 선택
-                file_info.is_selected = True
+            # 파일들을 리스트에 추가하되, 자동 선택하지 않음
+            # 사용자가 직접 체크박스를 선택해야 함
             self.file_list_widget._update_count_display()
     
     def _on_scan_error(self, error_message: str):
@@ -1250,10 +1249,31 @@ class MainWindow(QMainWindow):
         summary_text = f"변환이 완료되었습니다.\n\n"
         summary_text += f"총 파일: {total_count}개\n"
         summary_text += f"성공: {success_count}개\n"
-        
+
         if success_count < total_count:
             failed_count = total_count - success_count
             summary_text += f"실패: {failed_count}개\n"
+
+        # 변환 성공한 파일들의 상세 정보 추가
+        if success_count > 0:
+            summary_text += "\n📄 변환된 파일:\n"
+            success_results = [r for r in results if r.is_success]
+            for i, result in enumerate(success_results[:10], 1):  # 최대 10개까지만 표시
+                file_name = result.file_info.name
+                if result.output_path:
+                    output_name = result.output_path.name
+                    # 경로를 사용자 친화적으로 표시 (홈 디렉토리를 ~ 로 표시)
+                    output_dir = str(result.output_path.parent)
+                    if output_dir.startswith(str(Path.home())):
+                        output_dir = output_dir.replace(str(Path.home()), "~")
+                    summary_text += f"  {i}. {file_name} → {output_name}\n"
+                    summary_text += f"     위치: {output_dir}\n"
+                else:
+                    summary_text += f"  {i}. {file_name} → ✅ 변환완료\n"
+
+            if len(success_results) > 10:
+                remaining = len(success_results) - 10
+                summary_text += f"  ... 외 {remaining}개 더\n"
         
         if conflicts_resolved > 0:
             summary_text += f"\n충돌 해결:\n"
@@ -1275,14 +1295,77 @@ class MainWindow(QMainWindow):
                 default_dir = get_default_output_directory()
                 summary_text += f"\n파일들이 기본 출력 폴더에 저장되었습니다: {default_dir}"
         
+        # 변환 완료 다이얼로그 표시
         if success_count == total_count:
-            QMessageBox.information(self, "변환 완료", summary_text)
+            self._show_conversion_completed_dialog("변환 완료", summary_text, True)
         else:
             summary_text += "\n\n자세한 내용은 로그를 확인해주세요."
-            QMessageBox.warning(self, "변환 완료", summary_text)
+            self._show_conversion_completed_dialog("변환 완료", summary_text, False)
         
         logger.info(f"변환 완료 - 성공: {success_count}, 실패: {total_count - success_count}, 충돌 해결: {conflicts_resolved}")
-    
+
+    def _show_conversion_completed_dialog(self, title: str, text: str, is_success: bool):
+        """변환 완료 다이얼로그 표시 (스크롤 가능한 상세 정보 포함)"""
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QLabel
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtGui import QFont
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.resize(600, 400)
+
+        layout = QVBoxLayout(dialog)
+
+        # 아이콘과 제목
+        header_layout = QHBoxLayout()
+
+        # 성공/실패에 따른 아이콘
+        icon_label = QLabel("✅" if is_success else "⚠️")
+        icon_label.setStyleSheet("font-size: 24px; padding: 10px;")
+        header_layout.addWidget(icon_label)
+
+        title_label = QLabel(title)
+        title_label.setStyleSheet("font-size: 16px; font-weight: bold; padding: 10px;")
+        header_layout.addWidget(title_label)
+        header_layout.addStretch()
+
+        layout.addLayout(header_layout)
+
+        # 스크롤 가능한 텍스트 영역
+        text_edit = QTextEdit()
+        text_edit.setReadOnly(True)
+        text_edit.setPlainText(text)
+
+        # 폰트 설정 (가독성 향상)
+        font = QFont("맑은 고딕", 10)
+        text_edit.setFont(font)
+
+        # 텍스트 영역 스타일
+        text_edit.setStyleSheet("""
+            QTextEdit {
+                border: 1px solid #cccccc;
+                border-radius: 4px;
+                padding: 8px;
+                background-color: #fafafa;
+            }
+        """)
+
+        layout.addWidget(text_edit)
+
+        # 버튼
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+
+        ok_button = QPushButton("확인")
+        ok_button.setMinimumWidth(80)
+        ok_button.clicked.connect(dialog.accept)
+        button_layout.addWidget(ok_button)
+
+        layout.addLayout(button_layout)
+
+        # 다이얼로그 실행
+        dialog.exec()
+
     def _on_conversion_error(self, error_message: str):
         """변환 오류시 (향상된 오류 처리)"""
         self._reset_conversion_ui()
