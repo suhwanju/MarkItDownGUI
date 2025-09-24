@@ -493,8 +493,6 @@ pip install -r requirements.txt
 - **`ARCHITECTURE.md`**: 시스템 아키텍처 상세 분석
 
 ### 설정 및 가이드
-- **`CLAUDE.md`**: Claude Code 프로젝트 가이드
-- **`RELEASE.md`**: Windows 실행파일 빌드 가이드  
 - **`install_pdf_dependencies.py`**: PDF 의존성 자동 설치 스크립트
 
 ### 테스트 스크립트
@@ -548,7 +546,7 @@ pip install -r requirements.txt
 - **[pdfplumber](https://github.com/jsvine/pdfplumber)** - PDF 텍스트 추출
 - **[PyPDF2](https://github.com/py-pdf/pypdf)** - PDF 조작 라이브러리
 
-## 🔧 최근 버그 수정 (2025-02-18)
+## 🔧 최근 버그 수정 (2025-09-24)
 
 ### 해결된 중요 이슈
 1. **ConversionWorker ConfigManager 주입 문제**
