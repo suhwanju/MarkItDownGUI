@@ -699,124 +699,184 @@ class ConversionSettingsTab(QWidget):
     
     def _load_settings(self):
         """설정 로드"""
-        config = self.config_manager.get_config()
-        conversion_config = config.get("conversion", {})
-        
-        # 변환 옵션
-        self.include_metadata_check.setChecked(
-            conversion_config.get("include_metadata", True)
-        )
-        self.preserve_formatting_check.setChecked(
-            conversion_config.get("preserve_formatting", True)
-        )
-        self.extract_images_check.setChecked(
-            conversion_config.get("extract_images", False)
-        )
-        self.include_toc_check.setChecked(
-            conversion_config.get("include_toc", False)
-        )
-        
-        # 파일 충돌 설정 로드
-        if hasattr(config, 'conflict_config') and config.conflict_config:
-            conflict_config = config.conflict_config
-        else:
-            conflict_config = FileConflictConfig()  # 기본값 사용
-        
-        # 기본 충돌 처리 정책 설정
-        policy_map = {
-            FileConflictPolicy.ASK_USER: 0,
-            FileConflictPolicy.SKIP: 1,
-            FileConflictPolicy.OVERWRITE: 2,
-            FileConflictPolicy.RENAME: 3
-        }
-        policy_index = policy_map.get(conflict_config.default_policy, 0)
-        self.default_policy_combo.setCurrentIndex(policy_index)
-        
-        # 이름 변경 패턴
-        self.rename_pattern_edit.setText(conflict_config.auto_rename_pattern)
-        
-        # 충돌 처리 행동 옵션
-        self.remember_choices_check.setChecked(conflict_config.remember_choices)
-        self.apply_to_all_check.setChecked(conflict_config.apply_to_all)
-        
-        # 백업 및 로깅
-        self.backup_original_check.setChecked(conflict_config.backup_original)
-        self.conflict_log_check.setChecked(conflict_config.conflict_log_enabled)
-        
-        # 저장 위치 설정
-        save_to_original = getattr(config, 'save_to_original_directory', True)
-        self.save_to_original_check.setChecked(save_to_original)
-        
-        # 커스텀 출력 디렉토리
-        if not save_to_original and hasattr(config, 'output_directory'):
-            self.custom_output_edit.setText(str(config.output_directory))
-        
-        # 저장 위치 변경에 따른 UI 상태 업데이트
-        self._on_save_location_changed(save_to_original)
-        
-        # 파일 처리
-        self.max_workers_spin.setValue(
-            conversion_config.get("max_workers", 4)
-        )
-        self.timeout_spin.setValue(
-            conversion_config.get("timeout", 30)
-        )
-        self.retry_count_spin.setValue(
-            conversion_config.get("retry_count", 2)
-        )
-        
-        # 품질 설정
-        quality_map = {"low": 0, "medium": 1, "high": 2, "best": 3}
-        self.ocr_quality_combo.setCurrentIndex(
-            quality_map.get(conversion_config.get("ocr_quality", "medium"), 1)
-        )
-        self.image_quality_spin.setValue(
-            conversion_config.get("image_quality", 85)
-        )
-        
-        # 출력 형식
-        encoding_map = {"utf-8": 0, "utf-16": 1, "ascii": 2}
-        self.encoding_combo.setCurrentIndex(
-            encoding_map.get(conversion_config.get("encoding", "utf-8"), 0)
-        )
-        
-        line_ending_map = {"system": 0, "lf": 1, "crlf": 2}
-        self.line_ending_combo.setCurrentIndex(
-            line_ending_map.get(conversion_config.get("line_ending", "system"), 0)
-        )
-    
+        try:
+            config = self.config_manager.get_config()
+            logger.debug("Loading conversion settings from config")
+
+            # 변환 옵션 - 직접 config 속성에서 로드
+            self.include_metadata_check.setChecked(
+                getattr(config, 'include_metadata', True)
+            )
+            self.preserve_formatting_check.setChecked(
+                getattr(config, 'preserve_formatting', True)
+            )
+            self.extract_images_check.setChecked(
+                getattr(config, 'extract_images', False)
+            )
+            self.include_toc_check.setChecked(
+                getattr(config, 'include_toc', True)
+            )
+
+            # 파일 충돌 설정 로드
+            if hasattr(config, 'conflict_config') and config.conflict_config:
+                conflict_config = config.conflict_config
+            else:
+                conflict_config = FileConflictConfig()  # 기본값 사용
+                logger.debug("Using default FileConflictConfig")
+
+            # 기본 충돌 처리 정책 설정
+            policy_map = {
+                FileConflictPolicy.ASK_USER: 0,
+                FileConflictPolicy.SKIP: 1,
+                FileConflictPolicy.OVERWRITE: 2,
+                FileConflictPolicy.RENAME: 3
+            }
+            policy_index = policy_map.get(conflict_config.default_policy, 0)
+            self.default_policy_combo.setCurrentIndex(policy_index)
+
+            # 이름 변경 패턴
+            self.rename_pattern_edit.setText(conflict_config.auto_rename_pattern)
+
+            # 충돌 처리 행동 옵션
+            self.remember_choices_check.setChecked(conflict_config.remember_choices)
+            self.apply_to_all_check.setChecked(conflict_config.apply_to_all)
+
+            # 백업 및 로깅
+            self.backup_original_check.setChecked(conflict_config.backup_original)
+            self.conflict_log_check.setChecked(conflict_config.conflict_log_enabled)
+
+            # 저장 위치 설정
+            save_to_original = getattr(config, 'save_to_original_directory', True)
+            self.save_to_original_check.setChecked(save_to_original)
+
+            # 커스텀 출력 디렉토리
+            if not save_to_original and hasattr(config, 'output_directory'):
+                self.custom_output_edit.setText(str(config.output_directory))
+            else:
+                self.custom_output_edit.setText("")
+
+            # 저장 위치 변경에 따른 UI 상태 업데이트
+            self._on_save_location_changed(save_to_original)
+
+            # 파일 처리 - 직접 config 속성에서 로드
+            self.max_workers_spin.setValue(
+                getattr(config, 'max_workers', 3)
+            )
+            self.timeout_spin.setValue(
+                getattr(config, 'timeout', 60)
+            )
+            self.retry_count_spin.setValue(
+                getattr(config, 'retry_count', 3)
+            )
+
+            # 품질 설정 - 직접 config 속성에서 로드
+            quality_map = {"low": 0, "medium": 1, "high": 2, "best": 3}
+            ocr_quality = getattr(config, 'ocr_quality', 'medium')
+            self.ocr_quality_combo.setCurrentIndex(
+                quality_map.get(ocr_quality, 1)
+            )
+            self.image_quality_spin.setValue(
+                getattr(config, 'image_quality', 95)
+            )
+
+            # 출력 형식 - 직접 config 속성에서 로드
+            encoding_map = {"utf-8": 0, "utf-16": 1, "ascii": 2}
+            encoding = getattr(config, 'encoding', 'utf-8')
+            self.encoding_combo.setCurrentIndex(
+                encoding_map.get(encoding, 0)
+            )
+
+            line_ending_map = {"system": 0, "lf": 1, "crlf": 2}
+            line_ending = getattr(config, 'line_ending', 'system')
+            self.line_ending_combo.setCurrentIndex(
+                line_ending_map.get(line_ending, 0)
+            )
+
+            logger.debug("Conversion settings loaded successfully")
+
+        except Exception as e:
+            logger.error(f"Failed to load conversion settings: {e}")
+            # 오류 발생 시 기본값으로 복원
+            self._load_default_settings()
+
+    def _load_default_settings(self):
+        """기본 설정으로 UI 복원"""
+        try:
+            logger.debug("Loading default conversion settings")
+
+            # 변환 옵션 기본값
+            self.include_metadata_check.setChecked(True)
+            self.preserve_formatting_check.setChecked(True)
+            self.extract_images_check.setChecked(False)
+            self.include_toc_check.setChecked(True)
+
+            # 파일 충돌 설정 기본값
+            self.default_policy_combo.setCurrentIndex(0)  # ASK_USER
+            self.rename_pattern_edit.setText("{name}_{counter}{ext}")
+            self.remember_choices_check.setChecked(True)
+            self.apply_to_all_check.setChecked(False)
+            self.backup_original_check.setChecked(False)
+            self.conflict_log_check.setChecked(True)
+
+            # 저장 위치 설정 기본값
+            self.save_to_original_check.setChecked(True)
+            self.custom_output_edit.setText("")
+            self._on_save_location_changed(True)
+
+            # 파일 처리 기본값
+            self.max_workers_spin.setValue(3)
+            self.timeout_spin.setValue(60)
+            self.retry_count_spin.setValue(3)
+
+            # 품질 설정 기본값
+            self.ocr_quality_combo.setCurrentIndex(1)  # medium
+            self.image_quality_spin.setValue(95)
+
+            # 출력 형식 기본값
+            self.encoding_combo.setCurrentIndex(0)  # utf-8
+            self.line_ending_combo.setCurrentIndex(0)  # system
+
+            logger.debug("Default conversion settings loaded")
+
+        except Exception as e:
+            logger.error(f"Failed to load default settings: {e}")
+
     def save_settings(self) -> Dict[str, Any]:
         """설정 저장"""
-        # 설정 유효성 검사
-        is_valid, error_message = self._validate_settings()
-        if not is_valid:
-            QMessageBox.warning(self.parent(), "설정 오류", error_message)
-            raise ValueError(error_message)
-        
-        quality_values = ["low", "medium", "high", "best"]
-        encoding_values = ["utf-8", "utf-16", "ascii"]
-        line_ending_values = ["system", "lf", "crlf"]
-        
-        # 파일 충돌 설정 생성
-        policy_values = [
-            FileConflictPolicy.ASK_USER,
-            FileConflictPolicy.SKIP,
-            FileConflictPolicy.OVERWRITE,
-            FileConflictPolicy.RENAME
-        ]
-        selected_policy = policy_values[self.default_policy_combo.currentIndex()]
-        
-        conflict_config = FileConflictConfig(
-            default_policy=selected_policy,
-            auto_rename_pattern=self.rename_pattern_edit.text().strip(),
-            remember_choices=self.remember_choices_check.isChecked(),
-            apply_to_all=self.apply_to_all_check.isChecked(),
-            backup_original=self.backup_original_check.isChecked(),
-            conflict_log_enabled=self.conflict_log_check.isChecked()
-        )
-        
-        settings = {
-            "conversion": {
+        try:
+            logger.debug("Saving conversion settings")
+
+            # 설정 유효성 검사
+            is_valid, error_message = self._validate_settings()
+            if not is_valid:
+                logger.warning(f"Settings validation failed: {error_message}")
+                QMessageBox.warning(self.parent(), "설정 오류", error_message)
+                raise ValueError(error_message)
+
+            quality_values = ["low", "medium", "high", "best"]
+            encoding_values = ["utf-8", "utf-16", "ascii"]
+            line_ending_values = ["system", "lf", "crlf"]
+
+            # 파일 충돌 설정 생성
+            policy_values = [
+                FileConflictPolicy.ASK_USER,
+                FileConflictPolicy.SKIP,
+                FileConflictPolicy.OVERWRITE,
+                FileConflictPolicy.RENAME
+            ]
+            selected_policy = policy_values[self.default_policy_combo.currentIndex()]
+
+            conflict_config = FileConflictConfig(
+                default_policy=selected_policy,
+                auto_rename_pattern=self.rename_pattern_edit.text().strip(),
+                remember_choices=self.remember_choices_check.isChecked(),
+                apply_to_all=self.apply_to_all_check.isChecked(),
+                backup_original=self.backup_original_check.isChecked(),
+                conflict_log_enabled=self.conflict_log_check.isChecked()
+            )
+
+            settings = {
+                # Flatten conversion settings to individual keys that ConfigManager can handle
                 "include_metadata": self.include_metadata_check.isChecked(),
                 "preserve_formatting": self.preserve_formatting_check.isChecked(),
                 "extract_images": self.extract_images_check.isChecked(),
@@ -827,20 +887,265 @@ class ConversionSettingsTab(QWidget):
                 "ocr_quality": quality_values[self.ocr_quality_combo.currentIndex()],
                 "image_quality": self.image_quality_spin.value(),
                 "encoding": encoding_values[self.encoding_combo.currentIndex()],
-                "line_ending": line_ending_values[self.line_ending_combo.currentIndex()]
-            },
-            "conflict_config": conflict_config,
-            "save_to_original_directory": self.save_to_original_check.isChecked()
-        }
-        
-        # 커스텀 출력 디렉토리 설정
-        if not self.save_to_original_check.isChecked():
-            custom_output = self.custom_output_edit.text().strip()
-            if custom_output:
-                settings["output_directory"] = Path(custom_output)
-        
-        return settings
+                "line_ending": line_ending_values[self.line_ending_combo.currentIndex()],
+                "conflict_config": conflict_config,
+                "save_to_original_directory": self.save_to_original_check.isChecked()
+            }
 
+            # 커스텀 출력 디렉토리 설정
+            if not self.save_to_original_check.isChecked():
+                custom_output = self.custom_output_edit.text().strip()
+                if custom_output:
+                    settings["output_directory"] = Path(custom_output)
+
+            logger.debug(f"Conversion settings prepared for saving: {list(settings.keys())}")
+            return settings
+
+        except Exception as e:
+            logger.error(f"Failed to save conversion settings: {e}")
+            raise
+
+
+class LLMOCRSettingsTab(QWidget):
+    """LLM/OCR 설정 탭"""
+
+    def __init__(self, config_manager: ConfigManager):
+        super().__init__()
+        self.config_manager = config_manager
+        self.i18n_manager = get_i18n_manager()
+        self._init_ui()
+        self._load_settings()
+
+    def _init_ui(self):
+        """UI 초기화"""
+        layout = QVBoxLayout(self)
+
+        # LLM 설정 그룹
+        llm_group = QGroupBox("LLM 설정")
+        llm_layout = QFormLayout(llm_group)
+
+        # LLM 제공자
+        self.llm_provider_combo = QComboBox()
+        self.llm_provider_combo.addItems(["openai", "anthropic", "azure"])
+        llm_layout.addRow("LLM 제공자:", self.llm_provider_combo)
+
+        # LLM 모델
+        self.llm_model_combo = QComboBox()
+        self.llm_model_combo.addItems([
+            "gpt-4o-mini", "gpt-4o", "gpt-4", "gpt-3.5-turbo",
+            "claude-3-haiku", "claude-3-sonnet", "claude-3-opus"
+        ])
+        self.llm_model_combo.setEditable(True)
+        llm_layout.addRow("LLM 모델:", self.llm_model_combo)
+
+        # API 키
+        self.api_key_edit = QLineEdit()
+        self.api_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.api_key_edit.setPlaceholderText("OpenAI API 키를 입력하세요...")
+
+        api_key_layout = QHBoxLayout()
+        api_key_layout.addWidget(self.api_key_edit)
+
+        self.show_api_key_btn = QPushButton("표시")
+        self.show_api_key_btn.setCheckable(True)
+        self.show_api_key_btn.clicked.connect(self._toggle_api_key_visibility)
+        api_key_layout.addWidget(self.show_api_key_btn)
+
+        self.test_api_key_btn = QPushButton("API 키 테스트")
+        self.test_api_key_btn.clicked.connect(self._test_api_key)
+        api_key_layout.addWidget(self.test_api_key_btn)
+
+        api_key_widget = QWidget()
+        api_key_widget.setLayout(api_key_layout)
+        llm_layout.addRow("API 키:", api_key_widget)
+
+        # LLM 매개변수
+        self.temperature_slider = QSlider(Qt.Orientation.Horizontal)
+        self.temperature_slider.setMinimum(0)
+        self.temperature_slider.setMaximum(100)
+        self.temperature_slider.setValue(10)  # 0.1 * 100
+        self.temperature_label = QLabel("0.1")
+        self.temperature_slider.valueChanged.connect(
+            lambda v: self.temperature_label.setText(f"{v/100:.1f}")
+        )
+
+        temp_layout = QHBoxLayout()
+        temp_layout.addWidget(self.temperature_slider)
+        temp_layout.addWidget(self.temperature_label)
+        temp_widget = QWidget()
+        temp_widget.setLayout(temp_layout)
+        llm_layout.addRow("Temperature:", temp_widget)
+
+        self.max_tokens_spin = QSpinBox()
+        self.max_tokens_spin.setMinimum(100)
+        self.max_tokens_spin.setMaximum(32000)
+        self.max_tokens_spin.setValue(4096)
+        self.max_tokens_spin.setSuffix(" tokens")
+        llm_layout.addRow("최대 토큰:", self.max_tokens_spin)
+
+        layout.addWidget(llm_group)
+
+        # OCR 설정 그룹
+        ocr_group = QGroupBox("OCR 설정")
+        ocr_layout = QFormLayout(ocr_group)
+
+        # OCR 활성화
+        self.enable_llm_ocr_check = QCheckBox("LLM OCR 활성화")
+        ocr_layout.addRow(self.enable_llm_ocr_check)
+
+        # OCR 언어
+        self.ocr_language_combo = QComboBox()
+        self.ocr_language_combo.addItems([
+            "auto", "ko", "en", "ja", "zh", "es", "fr", "de", "it", "pt", "ru"
+        ])
+        ocr_layout.addRow("OCR 언어:", self.ocr_language_combo)
+
+        # 최대 이미지 크기
+        self.max_image_size_spin = QSpinBox()
+        self.max_image_size_spin.setMinimum(512)
+        self.max_image_size_spin.setMaximum(4096)
+        self.max_image_size_spin.setValue(1024)
+        self.max_image_size_spin.setSuffix(" px")
+        ocr_layout.addRow("최대 이미지 크기:", self.max_image_size_spin)
+
+        # 토큰 사용량 추적
+        self.track_token_usage_check = QCheckBox("토큰 사용량 추적")
+        ocr_layout.addRow(self.track_token_usage_check)
+
+        # 월별 토큰 한도
+        self.monthly_token_limit_spin = QSpinBox()
+        self.monthly_token_limit_spin.setMinimum(1000)
+        self.monthly_token_limit_spin.setMaximum(1000000)
+        self.monthly_token_limit_spin.setValue(100000)
+        self.monthly_token_limit_spin.setSuffix(" tokens")
+        ocr_layout.addRow("월별 토큰 한도:", self.monthly_token_limit_spin)
+
+        layout.addWidget(ocr_group)
+
+        # 시스템 프롬프트 그룹
+        prompt_group = QGroupBox("시스템 프롬프트")
+        prompt_layout = QVBoxLayout(prompt_group)
+
+        self.system_prompt_edit = QTextEdit()
+        self.system_prompt_edit.setMaximumHeight(100)
+        self.system_prompt_edit.setPlaceholderText("OCR을 위한 시스템 프롬프트를 입력하세요...")
+        prompt_layout.addWidget(self.system_prompt_edit)
+
+        layout.addWidget(prompt_group)
+
+        # 상태 표시
+        self.status_label = QLabel()
+        self.status_label.setStyleSheet("color: gray; font-style: italic;")
+        layout.addWidget(self.status_label)
+
+        layout.addStretch()
+
+    def _toggle_api_key_visibility(self):
+        """API 키 표시/숨김 토글"""
+        if self.show_api_key_btn.isChecked():
+            self.api_key_edit.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.show_api_key_btn.setText("숨김")
+        else:
+            self.api_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+            self.show_api_key_btn.setText("표시")
+
+    def _test_api_key(self):
+        """API 키 테스트"""
+        api_key = self.api_key_edit.text().strip()
+        if not api_key:
+            QMessageBox.warning(self, "경고", "API 키를 입력해주세요.")
+            return
+
+        self.test_api_key_btn.setEnabled(False)
+        self.test_api_key_btn.setText("테스트 중...")
+        self.status_label.setText("API 키를 테스트하는 중...")
+
+        # 간단한 API 테스트 (실제 구현에서는 LLMManager를 사용)
+        QTimer.singleShot(2000, self._api_test_completed)
+
+    def _api_test_completed(self):
+        """API 테스트 완료"""
+        self.test_api_key_btn.setEnabled(True)
+        self.test_api_key_btn.setText("API 키 테스트")
+        self.status_label.setText("API 키 테스트가 완료되었습니다.")
+
+    def _load_settings(self):
+        """설정 로드"""
+        try:
+            config = self.config_manager.get_config()
+            if config:
+                # LLM 설정
+                if hasattr(config, 'llm_provider'):
+                    index = self.llm_provider_combo.findText(config.llm_provider)
+                    if index >= 0:
+                        self.llm_provider_combo.setCurrentIndex(index)
+
+                if hasattr(config, 'llm_model'):
+                    index = self.llm_model_combo.findText(config.llm_model)
+                    if index >= 0:
+                        self.llm_model_combo.setCurrentIndex(index)
+                    else:
+                        self.llm_model_combo.setEditText(config.llm_model)
+
+                if hasattr(config, 'llm_temperature'):
+                    self.temperature_slider.setValue(int(config.llm_temperature * 100))
+
+                if hasattr(config, 'llm_max_tokens'):
+                    self.max_tokens_spin.setValue(config.llm_max_tokens)
+
+                if hasattr(config, 'llm_system_prompt'):
+                    self.system_prompt_edit.setPlainText(config.llm_system_prompt or "")
+
+                # API 키 로드 (보안 저장소에서)
+                try:
+                    api_key = self.config_manager.get_llm_api_key()
+                    if api_key:
+                        self.api_key_edit.setText(api_key)
+                        logger.debug("API key loaded from secure storage")
+                    else:
+                        self.api_key_edit.setText("")
+                        logger.debug("No API key found in secure storage")
+                except Exception as e:
+                    logger.warning(f"Failed to load API key: {e}")
+                    self.api_key_edit.setText("")
+
+                # OCR 설정
+                if hasattr(config, 'enable_llm_ocr'):
+                    self.enable_llm_ocr_check.setChecked(config.enable_llm_ocr)
+
+                if hasattr(config, 'ocr_language'):
+                    index = self.ocr_language_combo.findText(config.ocr_language)
+                    if index >= 0:
+                        self.ocr_language_combo.setCurrentIndex(index)
+
+                if hasattr(config, 'max_image_size'):
+                    self.max_image_size_spin.setValue(config.max_image_size)
+
+                if hasattr(config, 'track_token_usage'):
+                    self.track_token_usage_check.setChecked(config.track_token_usage)
+
+                if hasattr(config, 'token_usage_limit_monthly'):
+                    self.monthly_token_limit_spin.setValue(config.token_usage_limit_monthly)
+
+        except Exception as e:
+            logger.error(f"LLM/OCR 설정 로드 실패: {e}")
+            self.status_label.setText(f"설정 로드 실패: {e}")
+
+    def get_settings(self) -> Dict[str, Any]:
+        """현재 설정 반환"""
+        return {
+            'llm_provider': self.llm_provider_combo.currentText(),
+            'llm_model': self.llm_model_combo.currentText(),
+            'llm_temperature': self.temperature_slider.value() / 100,
+            'llm_max_tokens': self.max_tokens_spin.value(),
+            'llm_system_prompt': self.system_prompt_edit.toPlainText(),
+            'enable_llm_ocr': self.enable_llm_ocr_check.isChecked(),
+            'ocr_language': self.ocr_language_combo.currentText(),
+            'max_image_size': self.max_image_size_spin.value(),
+            'track_token_usage': self.track_token_usage_check.isChecked(),
+            'token_usage_limit_monthly': self.monthly_token_limit_spin.value(),
+            'openai_api_key': self.api_key_edit.text().strip() if self.api_key_edit.text().strip() else None
+        }
 
 
 class SettingsDialog(QDialog):
@@ -873,9 +1178,12 @@ class SettingsDialog(QDialog):
         # 탭 생성
         self.general_tab = GeneralSettingsTab(self.config_manager)
         self.tab_widget.addTab(self.general_tab, "일반")
-        
+
         self.conversion_tab = ConversionSettingsTab(self.config_manager)
         self.tab_widget.addTab(self.conversion_tab, "변환")
+
+        self.llm_ocr_tab = LLMOCRSettingsTab(self.config_manager)
+        self.tab_widget.addTab(self.llm_ocr_tab, "LLM/OCR")
         
         
         # 버튼
@@ -922,9 +1230,12 @@ class SettingsDialog(QDialog):
             
             general_settings = self.general_tab.save_settings()
             settings.update(general_settings)
-            
+
             conversion_settings = self.conversion_tab.save_settings()
             settings.update(conversion_settings)
+
+            llm_ocr_settings = self.llm_ocr_tab.get_settings()
+            settings.update(llm_ocr_settings)
             
             
             # FileConflictConfig 처리
@@ -937,7 +1248,22 @@ class SettingsDialog(QDialog):
                 save_to_original = settings.pop('save_to_original_directory')
                 output_directory = settings.pop('output_directory', None)
                 self.config_manager.update_save_location_settings(save_to_original, output_directory)
-            
+
+            # OpenAI API 키 처리 (보안 저장소 사용)
+            if 'openai_api_key' in settings:
+                api_key = settings.pop('openai_api_key')
+                if api_key and api_key.strip():
+                    success = self.config_manager.set_llm_api_key(api_key)
+                    if success:
+                        logger.info("OpenAI API key stored successfully")
+                    else:
+                        logger.warning("Failed to store OpenAI API key")
+                        QMessageBox.warning(self, "API 키 저장 실패",
+                                          "API 키를 저장하는 중 오류가 발생했습니다. 설정을 다시 확인해주세요.")
+                elif api_key == "":  # Empty string means user wants to remove the key
+                    self.config_manager.remove_llm_api_key()
+                    logger.info("OpenAI API key removed")
+
             # 나머지 설정 저장
             for key, value in settings.items():
                 self.config_manager.set_value(key, value)

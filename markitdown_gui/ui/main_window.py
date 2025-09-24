@@ -93,7 +93,8 @@ class MainWindow(QMainWindow):
         self.conversion_manager = ConversionManager(
             output_directory=self.config.output_directory,
             conflict_config=self.conflict_config,
-            save_to_original_dir=getattr(self.config, 'save_to_original_dir', True)
+            save_to_original_dir=getattr(self.config, 'save_to_original_dir', True),
+            config_manager=self.config_manager
         )
         
         # ConversionManager의 내부 conflict_handler에 대한 참조
@@ -424,11 +425,16 @@ class MainWindow(QMainWindow):
         
         # 상태 메시지
         self.status_bar.showMessage("준비")
-        
+
+        # OCR 상태 표시
+        self.ocr_status_label = QLabel()
+        self._update_ocr_status()
+        self.status_bar.addPermanentWidget(self.ocr_status_label)
+
         # 오른쪽에 파일 개수 표시
         self.file_count_label = QLabel("파일: 0개")
         self.status_bar.addPermanentWidget(self.file_count_label)
-        
+
         # 선택된 파일 개수 표시
         self.selected_count_label = QLabel("선택: 0개")
         self.status_bar.addPermanentWidget(self.selected_count_label)
@@ -832,7 +838,10 @@ class MainWindow(QMainWindow):
             
             # 최근 디렉토리 업데이트
             self._update_recent_directories()
-            
+
+            # OCR 상태 업데이트
+            self._update_ocr_status()
+
             # 상태바 메시지
             self.status_bar.showMessage("설정이 적용되었습니다", 3000)
             
@@ -1617,7 +1626,36 @@ class MainWindow(QMainWindow):
         
         policy_name = policy_names.get(self.conflict_config.default_policy, "알 수 없음")
         self.conflict_status_label.setText(f"충돌 정책: {policy_name}")
-    
+
+    def _update_ocr_status(self):
+        """OCR 상태 표시 업데이트"""
+        try:
+            config = self.config_manager.get_config()
+            if config and hasattr(config, 'enable_llm_ocr'):
+                if config.enable_llm_ocr:
+                    # API 키 확인
+                    if hasattr(config, 'openai_api_key') and config.openai_api_key:
+                        self.ocr_status_label.setText("🤖 OCR: 활성화")
+                        self.ocr_status_label.setStyleSheet("color: green; font-weight: bold;")
+                        self.ocr_status_label.setToolTip("LLM OCR이 활성화되어 있습니다. 이미지 파일의 텍스트를 자동으로 추출합니다.")
+                    else:
+                        self.ocr_status_label.setText("🤖 OCR: API 키 필요")
+                        self.ocr_status_label.setStyleSheet("color: orange; font-weight: bold;")
+                        self.ocr_status_label.setToolTip("OCR이 활성화되어 있지만 API 키가 설정되지 않았습니다. 설정에서 API 키를 입력하세요.")
+                else:
+                    self.ocr_status_label.setText("🤖 OCR: 비활성화")
+                    self.ocr_status_label.setStyleSheet("color: gray;")
+                    self.ocr_status_label.setToolTip("LLM OCR이 비활성화되어 있습니다. 설정에서 활성화할 수 있습니다.")
+            else:
+                self.ocr_status_label.setText("🤖 OCR: 사용 불가")
+                self.ocr_status_label.setStyleSheet("color: red;")
+                self.ocr_status_label.setToolTip("OCR 설정을 불러올 수 없습니다.")
+        except Exception as e:
+            logger.error(f"OCR 상태 업데이트 실패: {e}")
+            self.ocr_status_label.setText("🤖 OCR: 오류")
+            self.ocr_status_label.setStyleSheet("color: red;")
+            self.ocr_status_label.setToolTip(f"OCR 상태 확인 중 오류가 발생했습니다: {e}")
+
     def _update_conflict_policy_menu(self):
         """충돌 정책 메뉴 업데이트"""
         # 모든 액션 체크 해제

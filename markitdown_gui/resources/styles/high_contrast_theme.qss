@@ -622,9 +622,9 @@ QListWidget::item:hover:!selected {
 /* ===== TREE WIDGET ===== */
 
 QTreeWidget {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1.5px solid @border;
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
     border-radius: 0;
     outline: none;
     selection-background-color: @selected;
@@ -637,17 +637,18 @@ QTreeWidget::item {
     border-radius: 0;
     margin: 1px;
     font-weight: 600;
+    background-color: transparent;
 }
 
 QTreeWidget::item:selected {
     background-color: @selected;
     color: @on-primary;
-    border: 1.5px solid @border;
+    border: 1px solid #000000;
 }
 
 QTreeWidget::item:hover:!selected {
     background-color: @hover;
-    border: 1px solid @border;
+    border: 1px solid #000000;
 }
 
 QTreeWidget::branch:closed:has-children {
@@ -836,25 +837,25 @@ QToolTip {
 
 /* File List Widget */
 FileListWidget {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1.5px solid @border;
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
     border-radius: 0;
 }
 
 /* Progress Widget */
 ProgressWidget {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1.5px solid @border;
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
     border-radius: 0;
 }
 
 /* Log Widget */
 LogWidget {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1.5px solid @border;
+    background-color: #FFFFFF;
+    color: #000000;
+    border: 1px solid #000000;
     border-radius: 0;
 }
 

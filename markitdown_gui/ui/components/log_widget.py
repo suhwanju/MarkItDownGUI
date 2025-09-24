@@ -33,11 +33,34 @@ class LogWidget(QWidget):
         """UI 초기화"""
         # 그룹박스로 감싸기
         self.group_box = QGroupBox("변환 로그")
+        self.group_box.setStyleSheet(
+            """
+            QGroupBox {
+                background-color: #FFFFFF;
+                color: #1F1F1F;
+                border: 1px solid #E0E0E0;
+                border-radius: 6px;
+                margin-top: 10px;
+                padding-top: 6px;
+            }
+            QGroupBox::title {
+                background-color: #FFFFFF;
+                subcontrol-origin: margin;
+                left: 12px;
+                padding: 0 6px;
+            }
+            """
+        )
         layout = QVBoxLayout(self)
         layout.addWidget(self.group_box)
-        
+
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), QColor("#FFFFFF"))
+        self.setPalette(palette)
+        self.setAutoFillBackground(True)
+
         group_layout = QVBoxLayout(self.group_box)
-        
+
         # 상단 컨트롤
         control_layout = QHBoxLayout()
         
@@ -80,7 +103,10 @@ class LogWidget(QWidget):
         if not font.exactMatch():
             font = QFont("Courier New", 9)
         self.text_edit.setFont(font)
-        
+        self.text_edit.setStyleSheet(
+            "background-color: #FFFFFF; color: #1F1F1F; border: 1px solid #E0E0E0;"
+        )
+
         group_layout.addWidget(self.text_edit)
     
     def _setup_connections(self):

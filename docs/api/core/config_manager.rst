@@ -218,7 +218,7 @@ settings.ini
    token_usage_limit_monthly = 1000000
 
    [UI]
-   window_width = 1200
+   window_width = 960
    window_height = 800
    recent_directories = /home/user/docs,/home/user/projects
 

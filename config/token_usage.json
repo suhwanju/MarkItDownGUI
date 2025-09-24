@@ -1,0 +1,96 @@
+{
+  "usage_history": [
+    {
+      "timestamp": "2025-09-24T06:24:29.091754",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "usage_type": "ocr",
+      "prompt_tokens": 25589,
+      "completion_tokens": 282,
+      "total_tokens": 25871,
+      "cost_estimate": 0.0040075499999999995,
+      "success": true
+    },
+    {
+      "timestamp": "2025-09-24T06:26:07.219346",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "usage_type": "ocr",
+      "prompt_tokens": 25589,
+      "completion_tokens": 239,
+      "total_tokens": 25828,
+      "cost_estimate": 0.003981749999999999,
+      "success": true
+    },
+    {
+      "timestamp": "2025-09-24T20:46:05.381579",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "usage_type": "ocr",
+      "prompt_tokens": 25589,
+      "completion_tokens": 315,
+      "total_tokens": 25904,
+      "cost_estimate": 0.00402735,
+      "success": true
+    },
+    {
+      "timestamp": "2025-09-24T20:46:31.694806",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "usage_type": "ocr",
+      "prompt_tokens": 25589,
+      "completion_tokens": 226,
+      "total_tokens": 25815,
+      "cost_estimate": 0.0039739499999999995,
+      "success": true
+    },
+    {
+      "timestamp": "2025-09-24T20:46:52.030849",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "usage_type": "ocr",
+      "prompt_tokens": 14255,
+      "completion_tokens": 294,
+      "total_tokens": 14549,
+      "cost_estimate": 0.00231465,
+      "success": true
+    },
+    {
+      "timestamp": "2025-09-24T20:47:02.814902",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "usage_type": "ocr",
+      "prompt_tokens": 25589,
+      "completion_tokens": 365,
+      "total_tokens": 25954,
+      "cost_estimate": 0.0040573499999999995,
+      "success": true
+    },
+    {
+      "timestamp": "2025-09-24T20:47:23.494977",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "usage_type": "ocr",
+      "prompt_tokens": 14255,
+      "completion_tokens": 4,
+      "total_tokens": 14259,
+      "cost_estimate": 0.00214065,
+      "success": true
+    },
+    {
+      "timestamp": "2025-09-24T20:48:12.266727",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "usage_type": "ocr",
+      "prompt_tokens": 25589,
+      "completion_tokens": 274,
+      "total_tokens": 25863,
+      "cost_estimate": 0.004002749999999999,
+      "success": true
+    }
+  ],
+  "monthly_usage": {
+    "2025-09": 184043
+  },
+  "last_updated": "2025-09-24T20:48:12.267404"
+}

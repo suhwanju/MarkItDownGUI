@@ -51,6 +51,11 @@ from .error_handling import (
 )
 from .validators import DocumentValidator, ValidationLevel, ValidationResult
 
+# OCR service imports
+from .llm_manager import LLMManager
+from .ocr_service import OCRService, OCRServiceConfig
+from .models import LLMConfig, LLMProvider
+
 
 logger = get_logger(__name__)
 
@@ -72,7 +77,7 @@ class ConversionWorker(QThread):
                  conflict_handler: Optional[FileConflictHandler] = None,
                  save_to_original_dir: bool = True,
                  validation_level: ValidationLevel = ValidationLevel.STANDARD,
-                 enable_recovery: bool = True):
+                 enable_recovery: bool = True, config_manager=None):
         super().__init__()
         self.files = files
         self.output_directory = output_directory
@@ -83,6 +88,7 @@ class ConversionWorker(QThread):
         self._memory_optimizer = memory_optimizer or MemoryOptimizer()
         self._conflict_handler = conflict_handler or FileConflictHandler()
         self._save_to_original_dir = save_to_original_dir
+        self._config_manager = config_manager
         
         # Enhanced error handling components
         self._circuit_breaker = CircuitBreaker("conversion_worker")
@@ -93,11 +99,110 @@ class ConversionWorker(QThread):
         
         # Set up error reporter callback
         self._error_reporter.set_error_callback(self._on_error_reported)
-        
+
+        # Initialize OCR services
+        self._llm_manager = None
+        self._ocr_service = None
+        self._initialize_ocr_services()
+
         # 출력 디렉토리 생성 (원본 디렉토리에 저장하지 않는 경우만)
         if not self._save_to_original_dir:
             self.output_directory.mkdir(parents=True, exist_ok=True)
-    
+
+    def _initialize_ocr_services(self):
+        """Initialize OCR services when enabled in config"""
+        try:
+            if not self._config_manager:
+                logger.debug("No config manager provided, skipping OCR initialization")
+                return
+
+            config = self._config_manager.get_config()
+            if not config or not hasattr(config, 'enable_llm_ocr') or not config.enable_llm_ocr:
+                logger.debug("LLM OCR not enabled in config, skipping OCR initialization")
+                return
+
+            logger.info("Initializing OCR services...")
+
+            # Create LLM configuration from app config
+            provider_name = getattr(config, 'llm_provider', 'openai')
+            provider_enum = LLMProvider.OPENAI  # default
+            try:
+                if provider_name.lower() == 'azure':
+                    provider_enum = LLMProvider.AZURE
+                elif provider_name.lower() == 'local':
+                    provider_enum = LLMProvider.LOCAL
+                elif provider_name.lower() == 'anthropic':
+                    provider_enum = LLMProvider.ANTHROPIC
+            except Exception:
+                logger.warning(f"Unknown provider '{provider_name}', using OpenAI")
+
+            llm_config = LLMConfig(
+                provider=provider_enum,
+                model=getattr(config, 'llm_model', 'gpt-4o-mini'),
+                base_url=getattr(config, 'llm_base_url', None),
+                api_version=getattr(config, 'llm_api_version', None),
+                temperature=getattr(config, 'llm_temperature', 0.1),
+                max_tokens=getattr(config, 'llm_max_tokens', 4096),
+                enable_ocr=config.enable_llm_ocr,
+                ocr_language=getattr(config, 'ocr_language', 'auto'),
+                max_image_size=getattr(config, 'max_image_size', 1024),
+                system_prompt=getattr(config, 'llm_system_prompt', ''),
+                track_usage=getattr(config, 'track_token_usage', True),
+                usage_limit_monthly=getattr(config, 'token_usage_limit_monthly', 100000)
+            )
+
+            # Get API key from secure storage
+            try:
+                api_key = self._config_manager.get_llm_api_key()
+                if not api_key:
+                    logger.warning("No API key available for LLM OCR service")
+                    return
+                llm_config.api_key = api_key
+            except Exception as e:
+                logger.warning(f"Failed to get API key for LLM OCR: {e}")
+                return
+
+            # Initialize LLM Manager with config directory
+            from pathlib import Path
+            config_dir = Path("config")
+            self._llm_manager = LLMManager(config_dir)
+
+            # Configure LLM Manager with LLM config
+            if not self._llm_manager.configure(llm_config):
+                logger.warning("Failed to configure LLM Manager")
+                return
+
+            logger.debug("LLM Manager initialized and configured successfully")
+
+            # Create OCR service configuration
+            ocr_config = OCRServiceConfig(
+                enabled=config.enable_llm_ocr,
+                fallback_to_tesseract=True,
+                max_image_size=getattr(config, 'max_image_size', 1024),
+                supported_formats=['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'],
+                enable_preprocessing=getattr(config, 'enable_image_preprocessing', True),
+                preprocessing_config={
+                    'mode': getattr(config, 'preprocessing_mode', 'auto'),
+                    'quality_threshold': getattr(config, 'preprocessing_quality_threshold', 0.6),
+                    'enabled_enhancements': getattr(config, 'preprocessing_enabled_enhancements',
+                                                   ['deskew', 'contrast', 'brightness', 'sharpening', 'noise_reduction']),
+                    'enable_parallel_processing': getattr(config, 'preprocessing_enable_parallel', True),
+                    'cache_strategy': getattr(config, 'preprocessing_cache_strategy', 'memory')
+                }
+            )
+
+            # Initialize OCR Service
+            self._ocr_service = OCRService(self._llm_manager, ocr_config)
+            logger.info("OCR services initialized successfully")
+
+        except ImportError as e:
+            logger.info(f"OCR dependencies not available: {e}")
+        except Exception as e:
+            logger.error(f"Failed to initialize OCR services: {e}", exc_info=True)
+            # Don't raise exception - OCR is optional functionality
+            self._llm_manager = None
+            self._ocr_service = None
+
     def run(self):
         """변환 실행"""
         try:
@@ -349,10 +454,83 @@ class ConversionWorker(QThread):
                 logger.debug(f"캐시에서 변환 결과 사용: {file_info.path}")
                 return cached_content
             
-            # MarkItDown으로 변환
+            # MarkItDown으로 변환 (OCR 설정 적용)
             try:
-                conversion_result = self._markitdown.convert(str(file_info.path))
-                markdown_content = conversion_result.text_content
+                # OCR 설정 가져오기 (config_manager가 있는 경우)
+                config = None
+                if self._config_manager:
+                    config = self._config_manager.get_config()
+
+                # 이미지 파일인지 확인
+                image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'}
+                is_image_file = file_info.path.suffix.lower() in image_extensions
+
+                # OCR 처리 (이미지 파일이고 OCR 서비스가 사용 가능한 경우)
+                if is_image_file and config and hasattr(config, 'enable_llm_ocr') and config.enable_llm_ocr:
+                    if hasattr(self, '_ocr_service') and self._ocr_service is not None:
+                        # 우리의 OCRService 사용
+                        try:
+                            logger.info(f"Using OCRService for image file: {file_info.name}")
+                            # Use async extract_text_from_image method
+                            import asyncio
+                            ocr_result = asyncio.run(self._ocr_service.extract_text_from_image(Path(file_info.path)))
+
+                            if ocr_result and ocr_result.is_success and ocr_result.text:
+                                # OCR 성공 - Markdown 형식으로 포맷팅
+                                markdown_content = f"# {file_info.name}\n\n"
+                                markdown_content += f"**Image OCR Result**\n\n"
+                                markdown_content += ocr_result.text
+
+                                # 품질 정보 추가 (있는 경우)
+                                if hasattr(ocr_result, 'confidence') and ocr_result.confidence:
+                                    markdown_content += f"\n\n---\n*OCR Confidence Score: {ocr_result.confidence:.2f}*"
+
+                                # 메타데이터 저장
+                                file_info.conversion_metadata = {
+                                    'ocr_method': 'OCRService',
+                                    'extraction_success': True,
+                                    'confidence': getattr(ocr_result, 'confidence', None),
+                                    'processing_time': getattr(ocr_result, 'processing_time', None)
+                                }
+
+                                logger.info(f"OCRService successfully processed {file_info.name}")
+                            else:
+                                # OCR 실패 - MarkItDown으로 폴백
+                                logger.warning(f"OCRService failed for {file_info.name}, falling back to MarkItDown")
+                                raise Exception("OCRService failed, fallback to MarkItDown")
+
+                        except Exception as ocr_error:
+                            logger.warning(f"OCRService error for {file_info.name}: {ocr_error}, falling back to MarkItDown")
+                            # MarkItDown 폴백 처리는 아래에서 수행
+                            pass
+
+                    # OCR 서비스가 없거나 실패한 경우 MarkItDown OCR 사용
+                    if 'markdown_content' not in locals():
+                        # OCR 옵션 준비 (MarkItDown 내장 OCR)
+                        conversion_kwargs = {
+                            'ocr_enabled': True,
+                            'ocr_language': getattr(config, 'ocr_language', 'auto'),
+                            'max_image_size': getattr(config, 'max_image_size', 1024)
+                        }
+                        logger.info(f"Using MarkItDown OCR for image file: {file_info.name}")
+
+                        # 변환 실행
+                        conversion_result = self._markitdown.convert(str(file_info.path), **conversion_kwargs)
+                        markdown_content = conversion_result.text_content
+
+                        # OCR 메타데이터 저장
+                        file_info.conversion_metadata = {
+                            'ocr_method': 'MarkItDown',
+                            'metadata': getattr(conversion_result, 'metadata', {})
+                        }
+                else:
+                    # 이미지가 아니거나 OCR이 비활성화된 경우 일반 변환
+                    conversion_result = self._markitdown.convert(str(file_info.path))
+                    markdown_content = conversion_result.text_content
+
+                    # 메타데이터 저장 (이미지 파일인 경우)
+                    if is_image_file and hasattr(conversion_result, 'metadata'):
+                        file_info.conversion_metadata = getattr(conversion_result, 'metadata', {})
                 
                 # Check for FontBBox warnings
                 fontbbox_warnings = [
@@ -595,7 +773,7 @@ class ConversionManager(QObject):
     
     def __init__(self, output_directory: Path = None, conflict_config: Optional[FileConflictConfig] = None,
                  save_to_original_dir: bool = True, validation_level: ValidationLevel = ValidationLevel.STANDARD,
-                 enable_recovery: bool = True, enable_monitoring: bool = True):
+                 enable_recovery: bool = True, enable_monitoring: bool = True, config_manager=None):
         super().__init__()
         self.output_directory = output_directory or Path(DEFAULT_OUTPUT_DIRECTORY)
         self._conversion_worker: Optional[ConversionWorker] = None
@@ -604,6 +782,7 @@ class ConversionManager(QObject):
         self._memory_optimizer = MemoryOptimizer()
         self._conflict_handler = FileConflictHandler(conflict_config or FileConflictConfig())
         self._save_to_original_dir = save_to_original_dir
+        self._config_manager = config_manager
         
         # Enhanced error handling and monitoring
         self._validation_level = validation_level
@@ -678,8 +857,8 @@ class ConversionManager(QObject):
         # 새로운 변환 워커 생성 (enhanced)
         self._conversion_worker = ConversionWorker(
             files, self.output_directory, self._max_workers, self._memory_optimizer,
-            self._conflict_handler, self._save_to_original_dir, 
-            self._validation_level, self._enable_recovery
+            self._conflict_handler, self._save_to_original_dir,
+            self._validation_level, self._enable_recovery, self._config_manager
         )
         
         # Enhanced signal connections
@@ -718,7 +897,8 @@ class ConversionManager(QObject):
         
         worker = ConversionWorker(
             [file_info], self.output_directory, 1, self._memory_optimizer,
-            self._conflict_handler, self._save_to_original_dir
+            self._conflict_handler, self._save_to_original_dir,
+            self._validation_level, self._enable_recovery, self._config_manager
         )
         return worker._convert_single_file(file_info)
     

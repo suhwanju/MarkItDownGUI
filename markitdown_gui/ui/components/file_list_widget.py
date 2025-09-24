@@ -16,8 +16,16 @@ from pathlib import Path
 from ...core.models import FileInfo, ConversionStatus
 from ...core.logger import get_logger
 
-
 logger = get_logger(__name__)
+
+# OCR Enhancement imports (optional, only if feature is enabled)
+try:
+    from ...core.ocr_enhancements.ui_integrations import OCRStatusProvider
+    from ...core.ocr_enhancements.models import OCREnhancementConfig
+    OCR_INTEGRATION_AVAILABLE = True
+except ImportError:
+    OCR_INTEGRATION_AVAILABLE = False
+    logger.debug("OCR 통합 기능을 사용할 수 없습니다")
 
 
 class FileListWidget(QWidget):
@@ -28,9 +36,16 @@ class FileListWidget(QWidget):
     double_clicked = pyqtSignal(object)  # 더블클릭된 파일 정보
     export_requested = pyqtSignal(object)  # 내보내기 요청된 파일 정보
     
-    def __init__(self):
+    def __init__(self, ocr_config: Optional[OCREnhancementConfig] = None):
         super().__init__()
         self.file_items = {}  # Path -> QTreeWidgetItem 매핑
+
+        # OCR 상태 제공자 초기화 (선택적)
+        self.ocr_status_provider = None
+        if OCR_INTEGRATION_AVAILABLE and ocr_config and ocr_config.enabled:
+            self.ocr_status_provider = OCRStatusProvider(ocr_config)
+            logger.debug("OCR 상태 제공자 활성화됨")
+
         self._init_ui()
         self._setup_connections()
     
@@ -61,13 +76,15 @@ class FileListWidget(QWidget):
         self.tree_widget = QTreeWidget()
         self._setup_tree_widget()
         layout.addWidget(self.tree_widget)
-    
+
     def _setup_tree_widget(self):
         """트리 위젯 설정"""
-        # 컬럼 설정
+        # 컬럼 설정 (OCR 상태 컬럼 추가)
         columns = ["선택", "아이콘", "파일명", "크기", "수정일", "타입", "상태"]
+        if self.ocr_status_provider and self.ocr_status_provider.is_ocr_enabled():
+            columns.append("OCR")
         self.tree_widget.setHeaderLabels(columns)
-        
+
         # 헤더 설정
         header = self.tree_widget.header()
         header.setStretchLastSection(False)
@@ -78,17 +95,35 @@ class FileListWidget(QWidget):
         header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)  # 수정일
         header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)  # 타입
         header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)  # 상태
-        
+
+        # OCR 컬럼 추가시 헤더 설정
+        if self.ocr_status_provider and self.ocr_status_provider.is_ocr_enabled():
+            header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)  # OCR
+
         # 컬럼 너비 설정
         self.tree_widget.setColumnWidth(0, 50)   # 선택
         self.tree_widget.setColumnWidth(1, 30)   # 아이콘
-        
+
         # 기타 설정
         self.tree_widget.setAlternatingRowColors(True)
         self.tree_widget.setRootIsDecorated(False)
         self.tree_widget.setSelectionMode(QTreeWidget.SelectionMode.ExtendedSelection)
         self.tree_widget.setSortingEnabled(True)
-        
+
+        # 밝은 배경을 유지해 가독성을 높인다.
+        self.tree_widget.setStyleSheet(
+            """
+            QTreeWidget {
+                background-color: #FFFFFF;
+                alternate-background-color: #F7F7F7;
+                color: #1F1F1F;
+            }
+            QTreeWidget::item {
+                background-color: transparent;
+            }
+            """
+        )
+
         # 컨텍스트 메뉴 활성화
         self.tree_widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
     
@@ -126,7 +161,15 @@ class FileListWidget(QWidget):
         item.setText(4, file_info.modified_time.strftime("%Y-%m-%d %H:%M"))
         item.setText(5, file_info.file_type.value.upper())
         item.setText(6, self._get_status_text(file_info.conversion_status))
-        
+
+        # OCR 상태 배지 추가
+        if self.ocr_status_provider and self.ocr_status_provider.is_ocr_enabled():
+            ocr_badge_widget = self.ocr_status_provider.create_status_badge_widget(file_info)
+            if ocr_badge_widget:
+                self.tree_widget.setItemWidget(item, 7, ocr_badge_widget)
+            else:
+                item.setText(7, "")
+
         # 데이터 저장
         item.setData(0, Qt.ItemDataRole.UserRole, file_info)
         self.file_items[file_info.path] = item
@@ -154,6 +197,61 @@ class FileListWidget(QWidget):
             item = self.file_items[file_info.path]
             item.setText(6, self._get_status_text(status))
             file_info.conversion_status = status
+
+    def update_ocr_status(self, file_info: FileInfo, ocr_status: Optional[str] = None,
+                         quality_level: Optional[str] = None, ocr_method: Optional[str] = None):
+        """OCR 상태 업데이트"""
+        if not self.ocr_status_provider or not self.ocr_status_provider.is_ocr_enabled():
+            return
+
+        if file_info.path not in self.file_items:
+            return
+
+        # OCR 상태 제공자에 업데이트 요청
+        if OCR_INTEGRATION_AVAILABLE:
+            try:
+                from ...core.ocr_enhancements.models import OCRStatusType, QualityLevel as OCRQualityLevel
+
+                # 문자열을 열거형으로 변환
+                ocr_status_enum = None
+                if ocr_status:
+                    try:
+                        ocr_status_enum = OCRStatusType(ocr_status)
+                    except ValueError:
+                        logger.warning(f"알 수 없는 OCR 상태: {ocr_status}")
+
+                quality_enum = None
+                if quality_level:
+                    try:
+                        quality_enum = OCRQualityLevel(quality_level)
+                    except ValueError:
+                        logger.warning(f"알 수 없는 품질 수준: {quality_level}")
+
+                # 상태 업데이트
+                if ocr_status_enum:
+                    self.ocr_status_provider.update_file_status(
+                        file_info, ocr_status_enum, quality_enum, ocr_method
+                    )
+
+                # UI 위젯 재생성
+                item = self.file_items[file_info.path]
+                ocr_badge_widget = self.ocr_status_provider.create_status_badge_widget(file_info)
+                if ocr_badge_widget:
+                    self.tree_widget.setItemWidget(item, 7, ocr_badge_widget)
+
+            except ImportError:
+                logger.error("OCR 모델을 가져올 수 없습니다")
+
+    def get_ocr_status_summary(self, file_info: FileInfo) -> Optional[str]:
+        """OCR 상태 요약 반환"""
+        if not self.ocr_status_provider:
+            return None
+        return self.ocr_status_provider.get_status_summary(file_info)
+
+    def clear_ocr_cache(self):
+        """OCR 캐시 정리"""
+        if self.ocr_status_provider:
+            self.ocr_status_provider.clear_cache()
     
     def get_all_files(self) -> List[FileInfo]:
         """모든 파일 정보 반환"""

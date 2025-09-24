@@ -839,8 +839,8 @@ LLM 설정 및 사용량 추적
    config.ocr_language = 'auto'
    
    # UI 설정
-   config.window_width = 1400
-   config.window_height = 900
+   config.window_width = 960
+   config.window_height = 800
    config.recent_directories = [
        '/home/user/documents',
        '/home/user/downloads'

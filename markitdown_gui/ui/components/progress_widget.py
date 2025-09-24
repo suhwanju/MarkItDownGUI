@@ -20,6 +20,14 @@ from ...core.logger import get_logger
 from typing import Dict, List, Optional
 from datetime import datetime
 
+# OCR Enhancement imports (optional, only if feature is enabled)
+try:
+    from ...core.ocr_enhancements.ui_integrations import OCRProgressTracker
+    from ...core.ocr_enhancements.models import OCREnhancementConfig, OCRStatusType
+    OCR_PROGRESS_AVAILABLE = True
+except ImportError:
+    OCR_PROGRESS_AVAILABLE = False
+
 
 logger = get_logger(__name__)
 
@@ -61,20 +69,49 @@ class StatusIcon(QLabel):
 
 class PhaseProgressBar(QProgressBar):
     """단계별 진행률 바"""
-    
+
     def __init__(self):
         super().__init__()
         self.setMinimum(0)
         self.setMaximum(100)
         self.setTextVisible(True)
         self._current_phase = ConversionProgressStatus.INITIALIZING
-        
-    def update_phase(self, phase: ConversionProgressStatus, progress: float = 0.0):
+        self._ocr_stage = None  # OCR 단계 추적
+
+    def update_phase(self, phase: ConversionProgressStatus, progress: float = 0.0, ocr_stage: Optional[str] = None):
         """현재 단계와 진행률 업데이트"""
         self._current_phase = phase
+        self._ocr_stage = ocr_stage
         self.setValue(int(progress * 100))
-        
-        # 단계별 색상 설정
+
+        # OCR 단계가 있으면 OCR 색상 사용, 없으면 기본 색상 사용
+        if ocr_stage and OCR_PROGRESS_AVAILABLE:
+            color = self._get_ocr_stage_color(ocr_stage)
+            display_text = self._get_ocr_stage_text(ocr_stage)
+        else:
+            color = self._get_conversion_phase_color(phase)
+            display_text = self._get_conversion_phase_text(phase)
+
+        self.setStyleSheet(f"""
+            QProgressBar::chunk {{
+                background-color: {color};
+                border-radius: 3px;
+            }}
+            QProgressBar {{
+                border: 1px solid #CCCCCC;
+                border-radius: 3px;
+                text-align: center;
+            }}
+        """)
+
+        # 텍스트 포맷 설정
+        if ocr_stage:
+            self.setFormat(f"{display_text} - %p%")
+        else:
+            self.setFormat("%p%")
+
+    def _get_conversion_phase_color(self, phase: ConversionProgressStatus) -> str:
+        """변환 단계별 색상"""
         phase_colors = {
             ConversionProgressStatus.INITIALIZING: "#9E9E9E",
             ConversionProgressStatus.VALIDATING_FILE: "#FF9800",
@@ -87,19 +124,60 @@ class PhaseProgressBar(QProgressBar):
             ConversionProgressStatus.COMPLETED: "#4CAF50",
             ConversionProgressStatus.ERROR: "#F44336"
         }
-        
-        color = phase_colors.get(phase, "#2196F3")
-        self.setStyleSheet(f"""
-            QProgressBar::chunk {{
-                background-color: {color};
-                border-radius: 3px;
-            }}
-            QProgressBar {{
-                border: 1px solid #CCCCCC;
-                border-radius: 3px;
-                text-align: center;
-            }}
-        """)
+        return phase_colors.get(phase, "#2196F3")
+
+    def _get_conversion_phase_text(self, phase: ConversionProgressStatus) -> str:
+        """변환 단계별 텍스트"""
+        phase_texts = {
+            ConversionProgressStatus.INITIALIZING: "초기화",
+            ConversionProgressStatus.VALIDATING_FILE: "파일 검증",
+            ConversionProgressStatus.READING_FILE: "파일 읽기",
+            ConversionProgressStatus.PROCESSING: "변환 처리",
+            ConversionProgressStatus.CHECKING_CONFLICTS: "충돌 확인",
+            ConversionProgressStatus.RESOLVING_CONFLICTS: "충돌 해결",
+            ConversionProgressStatus.WRITING_OUTPUT: "파일 쓰기",
+            ConversionProgressStatus.FINALIZING: "마무리",
+            ConversionProgressStatus.COMPLETED: "완료",
+            ConversionProgressStatus.ERROR: "오류"
+        }
+        return phase_texts.get(phase, "처리 중")
+
+    def _get_ocr_stage_color(self, stage: str) -> str:
+        """OCR 단계별 색상"""
+        if not OCR_PROGRESS_AVAILABLE:
+            return "#2196F3"
+
+        try:
+            # OCRStatusType enum으로 변환하여 색상 매핑
+            stage_colors = {
+                "idle": "#E0E0E0",
+                "initializing": "#FFC107",
+                "preprocessing": "#FF9800",
+                "processing": "#2196F3",
+                "post_processing": "#673AB7",
+                "analyzing": "#9C27B0",
+                "completed": "#4CAF50",
+                "failed": "#F44336",
+                "cancelled": "#795548"
+            }
+            return stage_colors.get(stage, "#2196F3")
+        except:
+            return "#2196F3"
+
+    def _get_ocr_stage_text(self, stage: str) -> str:
+        """OCR 단계별 텍스트"""
+        stage_texts = {
+            "idle": "대기",
+            "initializing": "OCR 초기화",
+            "preprocessing": "이미지 전처리",
+            "processing": "OCR 처리",
+            "post_processing": "텍스트 후처리",
+            "analyzing": "품질 분석",
+            "completed": "OCR 완료",
+            "failed": "OCR 실패",
+            "cancelled": "OCR 취소"
+        }
+        return stage_texts.get(stage, "OCR 처리")
 
 
 class FileProgressItem(QTreeWidgetItem):
@@ -264,6 +342,7 @@ class ExpandableSection(QWidget):
         # 콘텐츠 컨테이너
         self.content_container = QWidget()
         self.content_container.setVisible(False)
+        self.content_container.setStyleSheet("background-color: #FFFFFF;")
         content_layout = QVBoxLayout(self.content_container)
         content_layout.setContentsMargins(5, 5, 5, 5)
         content_layout.addWidget(self.content_widget)
@@ -291,11 +370,18 @@ class ProgressWidget(QWidget):
     cancel_requested = pyqtSignal()
     settings_requested = pyqtSignal()
     
-    def __init__(self):
+    def __init__(self, ocr_config: Optional[OCREnhancementConfig] = None):
         super().__init__()
         self._is_active = False
         self._file_items: Dict[str, FileProgressItem] = {}
         self._start_time = None
+
+        # OCR 진행률 추적기 초기화 (선택적)
+        self.ocr_progress_tracker = None
+        if OCR_PROGRESS_AVAILABLE and ocr_config and ocr_config.enabled:
+            self.ocr_progress_tracker = OCRProgressTracker(ocr_config)
+            logger.debug("OCR 진행률 추적기 활성화됨")
+
         self._init_ui()
         self._setup_connections()
     
@@ -304,11 +390,18 @@ class ProgressWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(6)
+
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), QColor("#FFFFFF"))
+        self.setPalette(palette)
+        self.setAutoFillBackground(True)
         
         # 메인 그룹박스
         self.group_box = QGroupBox("변환 진행률")
         self.group_box.setStyleSheet("""
             QGroupBox {
+                background-color: #FFFFFF;
+                color: #1F1F1F;
                 font-weight: bold;
                 border: 1px solid #CCCCCC;
                 border-radius: 5px;
@@ -316,6 +409,7 @@ class ProgressWidget(QWidget):
                 padding-top: 5px;
             }
             QGroupBox::title {
+                background-color: #FFFFFF;
                 subcontrol-origin: margin;
                 left: 10px;
                 padding: 0 5px 0 5px;
@@ -418,6 +512,19 @@ class ProgressWidget(QWidget):
         self.file_tree.setAlternatingRowColors(True)
         self.file_tree.setSortingEnabled(True)
         self.file_tree.setRootIsDecorated(False)
+
+        self.file_tree.setStyleSheet(
+            """
+            QTreeWidget {
+                background-color: #FFFFFF;
+                alternate-background-color: #F7F7F7;
+                color: #1F1F1F;
+            }
+            QTreeWidget::item {
+                background-color: transparent;
+            }
+            """
+        )
         
         # 컬럼 너비 설정
         header = self.file_tree.header()
@@ -437,6 +544,7 @@ class ProgressWidget(QWidget):
         info_widget = QWidget()
         info_layout = QHBoxLayout(info_widget)
         info_layout.setContentsMargins(0, 0, 0, 0)
+        info_widget.setStyleSheet("background-color: #FFFFFF;")
         
         # 충돌 요약 패널
         self.conflict_summary = ConflictSummaryWidget()
@@ -478,6 +586,12 @@ class ProgressWidget(QWidget):
         """시그널-슬롯 연결"""
         self.cancel_btn.clicked.connect(self._on_cancel_clicked)
         self.settings_btn.clicked.connect(self._on_settings_clicked)
+
+        # OCR 진행률 추적기 시그널 연결
+        if self.ocr_progress_tracker:
+            self.ocr_progress_tracker.progress_updated.connect(self._on_ocr_progress_updated)
+            self.ocr_progress_tracker.stage_changed.connect(self._on_ocr_stage_changed)
+            self.ocr_progress_tracker.ocr_completed.connect(self._on_ocr_completed)
     
     def start_progress(self, total_files: int, file_list: Optional[List[FileInfo]] = None):
         """진행률 시작"""
@@ -527,10 +641,12 @@ class ProgressWidget(QWidget):
             self.current_file_label.setText(display_name)
             self.current_phase_label.setText(progress.current_progress_status.value)
             
-            # 현재 파일 진행률
+            # 현재 파일 진행률 (OCR 단계 정보 포함)
+            ocr_stage = self._get_current_ocr_stage(progress.current_file) if progress.current_file else None
             self.current_file_progress.update_phase(
                 progress.current_progress_status,
-                progress.current_file_progress
+                progress.current_file_progress,
+                ocr_stage
             )
             
             # 현재 파일 아이콘 업데이트
@@ -627,6 +743,124 @@ class ProgressWidget(QWidget):
     def _on_settings_clicked(self):
         """설정 버튼 클릭시"""
         self.settings_requested.emit()
+
+    # OCR 진행률 관련 메서드들
+    def _on_ocr_progress_updated(self, file_path: str, stage: OCRStatusType, progress: float):
+        """OCR 진행률 업데이트 시그널 처리"""
+        if not self._is_active:
+            return
+
+        # 현재 파일인 경우 진행률 바 업데이트
+        current_file_path = self._get_current_file_path()
+        if current_file_path and file_path == current_file_path:
+            self.current_file_progress.update_phase(
+                ConversionProgressStatus.PROCESSING,
+                progress,
+                stage.value if hasattr(stage, 'value') else str(stage)
+            )
+
+        logger.debug(f"OCR 진행률 업데이트: {file_path} -> {stage} ({progress:.1%})")
+
+    def _on_ocr_stage_changed(self, file_path: str, stage: OCRStatusType, description: str):
+        """OCR 단계 변경 시그널 처리"""
+        if not self._is_active:
+            return
+
+        # 현재 파일인 경우 상태 레이블 업데이트
+        current_file_path = self._get_current_file_path()
+        if current_file_path and file_path == current_file_path:
+            self.current_phase_label.setText(description)
+
+        logger.debug(f"OCR 단계 변경: {file_path} -> {stage.value}: {description}")
+
+    def _on_ocr_completed(self, file_path: str, success: bool, message: str):
+        """OCR 완료 시그널 처리"""
+        logger.info(f"OCR 완료: {file_path} (성공: {success}) - {message}")
+
+    def start_ocr_tracking(self, file_info: FileInfo, enhancements: List = None):
+        """OCR 추적 시작"""
+        if not self.ocr_progress_tracker:
+            return
+
+        if enhancements is None:
+            enhancements = []
+
+        self.ocr_progress_tracker.start_ocr_tracking(file_info, enhancements)
+
+    def update_ocr_stage(self, file_info: FileInfo, stage: str, progress: float = 0.0, description: str = ""):
+        """OCR 단계 업데이트"""
+        if not self.ocr_progress_tracker or not OCR_PROGRESS_AVAILABLE:
+            return
+
+        try:
+            # 문자열을 OCRStatusType으로 변환
+            stage_enum = OCRStatusType(stage)
+            self.ocr_progress_tracker.update_ocr_stage(file_info, stage_enum, progress, description)
+        except (ValueError, AttributeError) as e:
+            logger.warning(f"알 수 없는 OCR 단계: {stage} - {e}")
+
+    def complete_ocr_tracking(self, file_info: FileInfo, success: bool = True, message: str = ""):
+        """OCR 추적 완료"""
+        if not self.ocr_progress_tracker:
+            return
+
+        self.ocr_progress_tracker.complete_ocr_tracking(file_info, success, message)
+
+    def get_ocr_progress_summary(self, file_info: FileInfo) -> Optional[Dict]:
+        """OCR 진행률 요약 반환"""
+        if not self.ocr_progress_tracker:
+            return None
+
+        return self.ocr_progress_tracker.create_ocr_progress_summary(file_info)
+
+    def _get_current_ocr_stage(self, current_file: str) -> Optional[str]:
+        """현재 파일의 OCR 단계 반환"""
+        if not self.ocr_progress_tracker or not current_file:
+            return None
+
+        # 파일 정보 검색
+        file_info = self._find_file_info_by_name(current_file)
+        if not file_info:
+            return None
+
+        # OCR 상태 정보 가져오기
+        status_info = self.ocr_progress_tracker.get_ocr_status_info(file_info)
+        if not status_info:
+            return None
+
+        return status_info.status.value if hasattr(status_info.status, 'value') else str(status_info.status)
+
+    def _get_current_file_path(self) -> Optional[str]:
+        """현재 처리 중인 파일 경로 반환"""
+        # 현재 파일 레이블에서 파일명 추출
+        current_text = self.current_file_label.text()
+        if not current_text or current_text in ["대기 중...", "시작 중...", "완료", "중단됨"]:
+            return None
+
+        # 파일명으로 파일 정보 검색
+        file_info = self._find_file_info_by_name(current_text.replace("...", ""))
+        return str(file_info.path) if file_info else None
+
+    def _find_file_info_by_name(self, file_name: str) -> Optional[FileInfo]:
+        """파일명으로 FileInfo 검색"""
+        # 간단한 파일명 매칭 (개선 가능)
+        for item in self._file_items.values():
+            file_info = item.file_info
+            if file_info.name in file_name or file_name in file_info.name:
+                return file_info
+        return None
+
+    def clear_ocr_tracking(self):
+        """OCR 추적 데이터 정리"""
+        if self.ocr_progress_tracker:
+            self.ocr_progress_tracker.clear_tracking_data()
+
+    def get_ocr_tracking_stats(self) -> Optional[Dict]:
+        """OCR 추적 통계 반환"""
+        if not self.ocr_progress_tracker:
+            return None
+
+        return self.ocr_progress_tracker.get_tracking_stats()
     
     def is_active(self) -> bool:
         """진행률이 활성화되어 있는지 확인"""

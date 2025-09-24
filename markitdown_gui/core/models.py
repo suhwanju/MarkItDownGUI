@@ -188,6 +188,19 @@ class AppConfig:
     max_concurrent_conversions: int = 3
     include_subdirectories: bool = True
     save_to_original_directory: bool = True  # 원본 디렉토리에 저장
+
+    # 고급 변환 설정
+    include_metadata: bool = True
+    preserve_formatting: bool = True
+    extract_images: bool = False
+    include_toc: bool = True
+    max_workers: int = 3
+    timeout: int = 60
+    retry_count: int = 3
+    ocr_quality: str = "medium"  # low, medium, high, best
+    image_quality: int = 95
+    encoding: str = "utf-8"  # utf-8, utf-16, ascii
+    line_ending: str = "system"  # system, lf, crlf
     
     # 파일 충돌 설정
     conflict_config: FileConflictConfig = None
@@ -209,6 +222,15 @@ class AppConfig:
     enable_llm_ocr: bool = False
     ocr_language: str = "auto"
     max_image_size: int = 1024
+
+    # 이미지 전처리 설정
+    enable_image_preprocessing: bool = True
+    preprocessing_mode: str = "auto"  # auto, conservative, aggressive, custom
+    preprocessing_quality_threshold: float = 0.6
+    preprocessing_enabled_enhancements: List[str] = None
+    preprocessing_enable_parallel: bool = True
+    preprocessing_cache_strategy: str = "memory"  # none, memory, disk, hybrid
+    preprocessing_max_processing_time: float = 10.0
     
     # LLM 고급 설정
     llm_temperature: float = 0.1
@@ -220,7 +242,7 @@ class AppConfig:
     token_usage_limit_monthly: int = 100000  # 월별 토큰 한도
     
     # UI 설정
-    window_width: int = 1200
+    window_width: int = 960
     window_height: int = 800
     recent_directories: List[str] = None
     
@@ -228,6 +250,11 @@ class AppConfig:
         """기본값 설정"""
         if self.supported_extensions is None:
             self.supported_extensions = [e.value for e in FileType if e != FileType.UNKNOWN]
+
+        if self.preprocessing_enabled_enhancements is None:
+            self.preprocessing_enabled_enhancements = [
+                "deskew", "contrast", "brightness", "sharpening", "noise_reduction"
+            ]
         
         if self.recent_directories is None:
             self.recent_directories = []

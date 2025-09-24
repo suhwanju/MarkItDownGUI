@@ -248,23 +248,23 @@ QPlainTextEdit:focus {
 /* ===== TREE WIDGET ===== */
 
 QTreeWidget {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1px solid @border;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+    border: 1px solid #D0D5DC;
     border-radius: 6px;
     padding: 4px;
     outline: none;
     selection-background-color: @selected;
     selection-color: @on-primary;
-    alternate-background-color: @background;
+    alternate-background-color: #F7F7F7;
 }
 
 QTreeWidget::item {
     padding: 8px;
     border-radius: 4px;
     margin: 1px;
-    background-color: @background;
-    color: @on-background;
+    background-color: transparent;
+    color: #1F1F1F;
 }
 
 QTreeWidget::item:selected {
@@ -277,27 +277,27 @@ QTreeWidget::item:hover:!selected {
 }
 
 QTreeWidget::branch {
-    background-color: @background;
+    background-color: transparent;
 }
 
 QTreeView {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1px solid @border;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+    border: 1px solid #D0D5DC;
     border-radius: 6px;
     padding: 4px;
     outline: none;
     selection-background-color: @selected;
     selection-color: @on-primary;
-    alternate-background-color: @background;
+    alternate-background-color: #F7F7F7;
 }
 
 QTreeView::item {
     padding: 8px;
     border-radius: 4px;
     margin: 1px;
-    background-color: @background;
-    color: @on-background;
+    background-color: transparent;
+    color: #1F1F1F;
 }
 
 QTreeView::item:selected {
@@ -768,25 +768,25 @@ QToolTip {
 
 /* File List Widget */
 FileListWidget {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1px solid @border;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+    border: 1px solid #D0D5DC;
     border-radius: 6px;
 }
 
 /* Progress Widget */
 ProgressWidget {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1px solid @border;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+    border: 1px solid #D0D5DC;
     border-radius: 6px;
 }
 
 /* Log Widget */
 LogWidget {
-    background-color: @surface;
-    color: @on-surface;
-    border: 1px solid @border;
+    background-color: #FFFFFF;
+    color: #1F1F1F;
+    border: 1px solid #D0D5DC;
     border-radius: 6px;
 }
 

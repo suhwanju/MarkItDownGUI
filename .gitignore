@@ -47,3 +47,10 @@ config/recent_directories.json
 
 # Development files that should not be in version control
 markitdown-main/
+error*.log
+AGENTS.md
+CODE_REVIEWS.md
+CLAUDE.md
+test_*.py
+verify_*.py
+*.md
